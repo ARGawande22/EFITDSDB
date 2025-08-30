@@ -1,0 +1,25 @@
+﻿CREATE TABLE [dbo].[TDS_t_Voucher_Details] (
+    [Voucher_Id]     INT            IDENTITY (1, 1) NOT NULL,
+    [DDO_Code]       NVARCHAR (11)  NULL,
+    [BillHead]       NVARCHAR (50)  NULL,
+    [Fin_Year]       NVARCHAR (11)  NULL,
+    [Quarter]        NVARCHAR (3)   NULL,
+    [Bill_Month]     NVARCHAR (10)  NULL,
+    [Bill_Year]      NVARCHAR (10)  NULL,
+    [PayBill_Type]   NVARCHAR (255) NULL,
+    [Form_Type]      NVARCHAR (3)   NULL,
+    [Vourcher_Date]  DATE           NULL,
+    [Voucher_No]     INT            NULL,
+    [Voucher_Amount] DECIMAL (18)   NULL,
+    [IsKoshwahini]   NVARCHAR (1)   NULL,
+    [IsBinview]      NVARCHAR (1)   NULL,
+    [IsOltas]        NVARCHAR (1)   NULL,
+    [SourceId]       INT            NULL,
+    [InsertedOn]     DATE           NULL,
+    [InsertedBy]     INT            NULL,
+    [UpdatedOn]      DATE           NULL,
+    [updatedBy]      INT            NULL,
+    [Status]         NVARCHAR (1)   NULL,
+    CONSTRAINT [PK_Voucher_Details] PRIMARY KEY CLUSTERED ([Voucher_Id] ASC)
+);
+

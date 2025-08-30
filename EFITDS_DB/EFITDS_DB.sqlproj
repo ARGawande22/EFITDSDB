@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>EFITDS_DB</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{195dab71-b662-4b40-b7bb-315b1c867af2}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>EFITDS_DB</RootNamespace>
+    <AssemblyName>EFITDS_DB</AssemblyName>
+    <ModelCollation>1033,CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <DefaultCollation>SQL_Latin1_General_CP1_CI_AS</DefaultCollation>
+    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="dbo\" />
+    <Folder Include="dbo\Tables\" />
+    <Folder Include="dbo\Views\" />
+    <Folder Include="dbo\Functions\" />
+    <Folder Include="dbo\Stored Procedures\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\Tables\TDS_t_Office_Details.sql" />
+    <Build Include="dbo\Tables\TDS_t_EmpYearlyGross_Details.sql" />
+    <Build Include="dbo\Tables\TDS_t_HeadersDetails.sql" />
+    <Build Include="dbo\Tables\TDS_t_YearSlab.sql" />
+    <Build Include="dbo\Tables\TDS_t_YearSlabDetails.sql" />
+    <Build Include="dbo\Tables\TDS_t_YearlyChart_Headers.sql" />
+    <Build Include="dbo\Tables\TDS_t_UserDetails.sql" />
+    <Build Include="dbo\Tables\TDS_t_YearlyChart_RefHeaders.sql" />
+    <Build Include="dbo\Tables\TDS_t_CalChart_Headers.sql" />
+    <Build Include="dbo\Tables\TDS_t_CalChart_SubHeaders.sql" />
+    <Build Include="dbo\Tables\TDS_t_City.sql" />
+    <Build Include="dbo\Tables\TDS_t_CalChart_SubHeader_Limits.sql" />
+    <Build Include="dbo\Tables\TDS_t_Reject_Reasons.sql" />
+    <Build Include="dbo\Tables\TDS_t_EmpYearlyGRecov_Details.sql" />
+    <Build Include="dbo\Tables\TDS_t_CalChart_SubDetailHeaders.sql" />
+    <Build Include="dbo\Tables\TDS_t_UserPermission.sql" />
+    <Build Include="dbo\Tables\TDS_t_UserRole.sql" />
+    <Build Include="dbo\Tables\TDS_t_CalChart_SubDetailsHeader_Limits.sql" />
+    <Build Include="dbo\Tables\TDS_t_DeductorTypes.sql" />
+    <Build Include="dbo\Tables\TDS_t_Designations.sql" />
+    <Build Include="dbo\Tables\TDS_t_Gender.sql" />
+    <Build Include="dbo\Tables\TDS_t_CrendetialTypes.sql" />
+    <Build Include="dbo\Tables\TDS_t_Calc_Details.sql" />
+    <Build Include="dbo\Tables\TDS_t_Months.sql" />
+    <Build Include="dbo\Tables\TDS_t_ConfigurationParameter.sql" />
+    <Build Include="dbo\Tables\TDS_t_Calc_SubDetails.sql" />
+    <Build Include="dbo\Tables\TDS_t_Oltas_OtherDetails.sql" />
+    <Build Include="dbo\Tables\TDS_t_EmdbMasterData.sql" />
+    <Build Include="dbo\Tables\TDS_t_Calc_HRA.sql" />
+    <Build Include="dbo\Tables\TDS_t_Quarter.sql" />
+    <Build Include="dbo\Tables\TDS_t_UserLogin.sql" />
+    <Build Include="dbo\Tables\TDS_t_FormType.sql" />
+    <Build Include="dbo\Tables\TDS_t_Calc_HRADetails.sql" />
+    <Build Include="dbo\Tables\TDS_t_Office_DDODetails.sql" />
+    <Build Include="dbo\Tables\TDS_t_Office_Credentials.sql" />
+    <Build Include="dbo\Tables\TDS_t_Calc_Sheets.sql" />
+    <Build Include="dbo\Tables\TDS_t_Emp_Details.sql" />
+    <Build Include="dbo\Tables\TDS_t_EmpBank_Details.sql" />
+    <Build Include="dbo\Tables\TDS_t_IncomeTax_Challan.sql" />
+    <Build Include="dbo\Tables\TDS_t_EmpTransfer_History.sql" />
+    <Build Include="dbo\Tables\TDS_t_IncomeTax_ChallanDetails.sql" />
+    <Build Include="dbo\Tables\TDS_t_EmpRegime_Type.sql" />
+    <Build Include="dbo\Tables\TDS_t_Relief89.sql" />
+    <Build Include="dbo\Tables\TDS_t_Bin_Details.sql" />
+    <Build Include="dbo\Tables\TDS_t_Relief89_Details.sql" />
+    <Build Include="dbo\Tables\TDS_t_Oltas_Details.sql" />
+    <Build Include="dbo\Tables\TDS_t_EmpYearly_Details.sql" />
+    <Build Include="dbo\Tables\TDS_t_Relief89_Header.sql" />
+    <Build Include="dbo\Tables\TDS_t_Relief89_SubHeader.sql" />
+    <Build Include="dbo\Tables\TDS_t_Office_Registration.sql" />
+    <Build Include="dbo\Tables\TDS_t_Voucher_Details.sql" />
+    <Build Include="dbo\Tables\TDS_t_Country.sql" />
+    <Build Include="dbo\Tables\TDS_t_States.sql" />
+    <Build Include="dbo\Tables\TDS_t_EmpYearlyGNonRecov_Details.sql" />
+    <Build Include="dbo\Tables\TDS_t_Header.sql" />
+    <Build Include="dbo\Tables\TDS_t_Year.sql" />
+    <Build Include="dbo\Views\City_v.sql" />
+    <Build Include="dbo\Views\Year_v.sql" />
+    <Build Include="dbo\Functions\GetOltasQuarter.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_CreateLogin.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetMaxUserId.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GenerateSevaarthId.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_updCredentials.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_insSevaarthData.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_updVoucherAmt.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_insupdKoshData.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_selVoucherDetails.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_insupdBinData.sql" />
+    <Build Include="dbo\Stored Procedures\sel_AuthenticateUser.sql" />
+    <Build Include="dbo\Stored Procedures\upd_UserLastLogin.sql" />
+    <Build Include="dbo\Stored Procedures\upd_UserPassword.sql" />
+    <Build Include="dbo\Stored Procedures\sel_AllClientDetails.sql" />
+    <Build Include="dbo\Stored Procedures\sel_ClientById.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetCity.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetState.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetCountry.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetDeductorTypes.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetGenderTypes.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetRolerTypes.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetAccessPermission.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetFinYears.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetFinYearSlab.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetFinYearSlabDetails.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetQuarter.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetFormType.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetCredentialType.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_insupdOltasData.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetSevaarthHeaders.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetSevaarthSubHeaders.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_insSevaarthSubHeader.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetConfigParam.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_IsVoucherExists.sql" />
+    <Build Include="dbo\Stored Procedures\sel_Users.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_insVoucherDetails.sql" />
+    <Build Include="dbo\Stored Procedures\save_Client_Load_XML.sql" />
+    <Build Include="dbo\Stored Procedures\save_Client.sql" />
+  </ItemGroup>
+</Project>

@@ -1,7 +1,15 @@
-USE [TDSLive];
+USE [TDSLive]
 GO
 
-Create OR Alter View [dbo].[Voucher_v0]
+/****** Object:  View [dbo].[SelVoucher_v0]    Script Date: 13/09/2025 15:09:45 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+CREATE OR ALTER   View [dbo].[SelVoucher_v0]
 --***********************************************************
 --***
 --*** Created On 12 Sep 2025 By A.R.Gawande
@@ -42,11 +50,17 @@ AS
 					 WHEN v.SourceId in(1,2) THEN 'NA'
 				ELSE 'UnMatched'
 				END,
-		v.InsertedOn,
+		InsertedOn=CONVERT(DATE, v.InsertedOn,23),
 		v.InsertedBy,
-		v.UpdatedOn,
+		iUserId=ul.[User_Id],
+		UpdatedOn=CONVERT(DATE, v.UpdatedOn,23),
 		v.updatedBy,
+		uUserId=ul1.[User_Id],
 		v.[Status]
 	FROM TDS_t_Voucher_Details v with(nolock)
+		LEFT JOIN [dbo].[TDS_t_UserLogin] ul with(nolock) on v.InsertedBy=ul.login_Id
+		LEFT JOIN [dbo].[TDS_t_UserLogin] ul1 with(nolock) on v.updatedBy=ul1.login_Id
 
 GO
+
+

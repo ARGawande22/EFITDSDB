@@ -104,7 +104,7 @@ BEGIN
 				BEGIN
 					INSERT INTO [dbo].[TDS_t_Voucher_Details](DDO_Code,Fin_Year,[Quarter],Form_Type,Vourcher_Date,Voucher_No,Voucher_Amount,IsKoshwahini,IsOltas,SourceId,
 															InsertedOn,InsertedBy,[Status]) 
-						   VALUES(@DDOCode,@FinYear,@Quarter,@Form_Type,@VoucherDate,@VoucherNo,@VoucherAmount,'Y','N',2,@GetDate,@loginId,'Y')
+						   VALUES(@DDOCode,@FinYear,@Quarter,@Form_Type,@VoucherDate,@VoucherNo,@VoucherAmount,'Y','N',2,@GetDate,@loginId,'N')
 					SET @Voucher_Id=@@IDENTITY;
 				END
 			END

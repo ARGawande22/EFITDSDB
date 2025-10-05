@@ -161,8 +161,11 @@
     <Build Include="dbo\Stored Procedures\TDS_sp_insVoucherDetails.sql" />
     <Build Include="dbo\Stored Procedures\save_Client_Load_XML.sql" />
     <Build Include="dbo\Stored Procedures\save_Client.sql" />
-    <Build Include="dbo\Views\Voucher_v0.sql" />
     <Build Include="dbo\Functions\GetFromDate.sql" />
     <Build Include="dbo\Functions\GetToDate.sql" />
+    <Build Include="dbo\Views\SelVoucher_v0.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetVoucherDetails.sql" />
+    <Build Include="dbo\Views\EmployeeData_v0.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetClientCredential.sql" />
   </ItemGroup>
 </Project>

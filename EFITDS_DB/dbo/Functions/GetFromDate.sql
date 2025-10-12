@@ -32,7 +32,11 @@ BEGIN
    ELSE IF(@Quarter='Q4')
 	BEGIN
 		SET @Result=DATEFROMPARTS(@Year2,01,01)
-	END     
+	END
+	ELSE IF(@Quarter='ALL')
+	BEGIN
+		SET @Result=DATEFROMPARTS(@Year1,04,01)
+	END
 
     RETURN @Result
 END

@@ -1,0 +1,255 @@
+USE TDSLive;
+GO
+
+Create OR Alter Procedure [dbo].[TDS_sp_GetEmployeeSalDetails]
+	@VoucherId INT
+
+--***********************************************************
+--***
+--*** Created On 02 Oct 2025 By A.R.Gawande
+--***
+--***********************************************************
+AS
+BEGIN
+
+	SET NOCOUNT ON 
+	SET ANSI_NULLS ON
+	SET ANSI_WARNINGS ON
+
+	DECLARE @ErrMsg Nvarchar(255),
+			@Status CHAR(1)
+
+	--Get Voucher Employee Details
+	SELECT	ed.Sevaarth_Id
+			,ed.DDO_Code
+			,ed.EMP_PANNo
+			,ed.PAN_Status
+			,ed.UID_No
+			,ed.EID_No
+			,ed.Name_AsPerSevaarth
+			,ed.DBO_AsPerSevaarth
+			,ed.Name_AsPerIT
+			,ed.DBO_AsPerIT
+			,ed.Designation_Id
+			,ed.Designation
+			,ed.DOJ
+			,ed.DOR
+			,ed.Contact_No
+			,ed.Email_Id
+			,ed.Gender_Id
+			,ed.Gender
+			,ed.[Address]
+			,ed.IsManual
+			,ed.IsSeniorCitizen
+			,ed.IsDCPS
+			,ed.Account_No
+			,ed.Bank_Name
+			,ed.IFSC_Code
+			,ed.GPF_DCPS_AccountNo
+			,ed.BankStatus
+			,eyd.Yealy_Id
+			,eyd.Voucher_Id
+			,eyd.Fin_Year
+			,eyd.Bill_Month
+			,eyd.Bill_Year
+			,eyd.PayBill_Type
+			,eyd.Vourcher_Date
+			,eyd.Voucher_No
+			,eyd.Net_Pay
+			,eyd.[Status]
+			,eyd.Gross_Id
+			,eyd.PayIn_PB_GP
+			,eyd.Basic_Pay
+			,eyd.Basic_Arrear
+			,eyd.Official_Pay
+			,eyd.Personal_Pay
+			,eyd.CLA_Pay
+			,eyd.Special_Pay
+			,eyd.Writer_Pay
+			,eyd.Leave_Salary
+			,eyd.DA
+			,eyd.DA_7PC
+			,eyd.Additional_DA
+			,eyd.Central_DA
+			,eyd.DA_Arrear
+			,eyd.DA_On_TA
+			,eyd.Dearness_Pay
+			,eyd.Additional_Pay
+			,eyd.HRA
+			,eyd.Additional_HRA
+			,eyd.HRA_Arrear
+			,eyd.HRA_Pay
+			,eyd.TA
+			,eyd.TA_Arrears
+			,eyd.TA_Pay
+			,eyd.Central_TA
+			,eyd.Leave_TA
+			,eyd.DCPS_Employer_Contribution
+			,eyd.ATC_Incentive_50
+			,eyd.ATC_Incentive_30
+			,eyd.Force_Incentive_100
+			,eyd.Force_Incentive_25
+			,eyd.Incentive_For_BDDS
+			,eyd.Arm_Allowance
+			,eyd.Armourer_Allowance
+			,eyd.BMI_Allowance
+			,eyd.CHPL_CPL_Allowance
+			,eyd.CID_Allowance
+			,eyd.Cash_Allowance
+			,eyd.Children_Educ_Allowance
+			,eyd.Convenyance_Allowance
+			,eyd.ESIS_Allowance
+			,eyd.Emergency_Allowance
+			,eyd.Extra_Lecture_Allowance
+			,eyd.Family_Planning_Allowance
+			,eyd.Fitness_Allowance
+			,eyd.Franking_Allowance
+			,eyd.Hilly_Allowance
+			,eyd.Kit_Maintenance_Allowance
+			,eyd.Mechanical_Allowance
+			,eyd.Med_St_Allowance
+			,eyd.Medical_Allowance_MA
+			,eyd.Medical_Education_Allowance
+			,eyd.Mess_Allowance
+			,eyd.Naxal_Area_Allowance
+			,eyd.Non_Practicing_Allowance
+			,eyd.Other_Allowances
+			,eyd.Other_Miscellaneous_Allowance
+			,eyd.Outfit_Allowance
+			,eyd.Peon_Allowance
+			,eyd.Permanent_Travelling_Allowance
+			,eyd.Post_Graduation_Allowance
+			,eyd.Project_Allowance
+			,eyd.Qualification_Allowance
+			,eyd.Refreshment_Allowance
+			,eyd.Special_Duty_Allowance
+			,eyd.Sumptuary_Allowance
+			,eyd.Technical_Allowance
+			,eyd.Tribal_Allowance
+			,eyd.Uniform_Allowance
+			,eyd.Washing_Allowance
+			,eyd.Flying_Allowance_For_Pilot
+			,eyd.Inspection_Allowance_For_Pilot
+			,eyd.Instructional_Allowance_For_Pilot
+			,eyd.Flying_Pay_For_Pilot_Cons
+			,eyd.Militery_Serv_Pay_Pilot
+			,eyd.RT_Allowance_For_Pilot
+			,eyd.Special_Pay_For_Pilot
+			,eyd.Gallantry_Awards
+			,eyd.IR_For_Judges
+			,eyd.License_Free
+			,eyd.UCTC
+			,eyd.Partially_Fully_Tax_Free
+			,eyd.Other
+			,eyd.Total_Gross
+			,eyd.Recov_Id
+			,eyd.Proffession_Tax
+			,eyd.Proffession_Tax_Arrears
+			,eyd.Income_Tax
+			,eyd.DCPS_Employee_Contribution
+			,eyd.DCPS_Pay_Arrear
+			,eyd.DCPS_Pay_Arrears_Recovery
+			,eyd.DCPS_Regular_Recovery
+			,eyd.DCPS_DA_Arrears_Recovery
+			,eyd.DCPS_Delayed_Recovery
+			,eyd.DedAdj_Employer_Contribution
+			,eyd.GIS
+			,eyd.Central_GIS
+			,eyd.GIS_IAS
+			,eyd.GIS_IFS
+			,eyd.GIS_IPS
+			,eyd.GIS_ZP
+			,eyd.GIS_Arrear
+			,eyd.GIS_Arrears_Recovery
+			,eyd.Contributory_PF
+			,eyd.GPF_IAS
+			,eyd.GPF_IAS_OtherState
+			,eyd.GPF_IFS
+			,eyd.GPF_IPS
+			,eyd.GPF_GRP_ABC
+			,eyd.GPF_ADV_GRP_ABC
+			,eyd.GPF_GRP_D
+			,eyd.GPF_ADV_GRP_D
+			,eyd.GPF_ABC_Arrears
+			,eyd.GPF_D_Arrears
+			,eyd.GPF_IAS_Arrears
+			,eyd.GPF_IFS_Arrears
+			,eyd.Group_Account_Policy
+			,eyd.House_Rent_Recovery
+			,eyd.HRR_Arrear
+			,eyd.MSLI
+			,eyd.PLI
+			,eyd.Service_Charge_and_Garage_Charge
+			,eyd.Service_Charge_Arr
+			,eyd.Co_Housing_Society
+			,eyd.Co_Housing_Society_Interest
+			,eyd.Computer_Advance
+			,eyd.Comp_Adv_Int
+			,eyd.Comp_AIS_Int
+			,eyd.Recovery_of_Overpayment
+			,eyd.FA
+			,eyd.HBA_Principal
+			,eyd.HBA_Interest
+			,eyd.HBA_AIS
+			,eyd.HBA_AIS_Int
+			,eyd.HBA_For_Land
+			,eyd.HBA_For_Land_Int
+			,eyd.HBA_House
+			,eyd.HBA_House_Int
+			,eyd.HIS
+			,eyd.MCA
+			,eyd.MCA_Interest
+			,eyd.MCA_AIS
+			,eyd.MCA_AIs_Int
+			,eyd.Other_Adv
+			,eyd.Other_Adv_Int
+			,eyd.Other_Vehical_Advance
+			,eyd.Other_Vehical_Advance_Interest
+			,eyd.Pay_Advance
+			,eyd.TA_Advance
+			,eyd.Other_GRecov
+			,eyd.Total_GRecoveries
+			,eyd.NonRec_Id
+			,eyd.Bank_Loan_1
+			,eyd.Bank_Loan_2
+			,eyd.Co_Op_Bank_1
+			,eyd.Co_Op_Bank_2
+			,eyd.Co_Op_Cr_Soc_1
+			,eyd.Co_Op_Cr_Soc_2
+			,eyd.Co_Op_Hsg_Soc
+			,eyd.LIC_1
+			,eyd.LIC_2
+			,eyd.LIC_3
+			,eyd.Other_Recovery_1
+			,eyd.Other_Recovery_2
+			,eyd.RD_1
+			,eyd.RD_2
+			,eyd.Con_Store
+			,eyd.Matralaya_Bank
+			,eyd.Mess_Recovery
+			,eyd.Miscellaneous
+			,eyd.Elec_Charge
+			,eyd.Maintenance_Charge
+			,eyd.Tel_Charge
+			,eyd.Water_Charge
+			,eyd.Club_Fund
+			,eyd.Mess_Dev_Fund
+			,eyd.Welfare_Fund
+			,eyd.Other_GNonRecov
+			,eyd.Total_GNonRecoveries
+	FROM dbo.EmployeeDetails_v0 ed
+		INNER JOIN dbo.EmployeeData_v0 eyd ON ed.Sevaarth_Id=eyd.Sevaarth_Id
+	WHERE eyd.Voucher_Id=@VoucherId
+	ORDER BY ed.Sevaarth_Id
+
+	RETURN(0)
+
+spError:
+	IF(ISNULL(DATALENGTH(@ErrMsg),0))>0
+	BEGIN
+		SELECT @ErrMsg=@ErrMsg
+		RAISERROR(@ErrMsg,18,1)
+	END
+
+	RETURN(-1)
+END

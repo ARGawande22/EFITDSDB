@@ -93,6 +93,48 @@ BEGIN
 							ELSE empv.DDO_Code 
 						END
 
+UNION
+
+	SELECT	empv.Sevaarth_Id
+			,empv.DDO_Code
+			,empv.EMP_PANNo
+			,empv.PAN_Status
+			,empv.UID_No
+			,empv.EID_No
+			,empv.Name_AsPerSevaarth
+			,empv.DBO_AsPerSevaarth
+			,empv.Name_AsPerIT
+			,empv.DBO_AsPerIT
+			,empv.Designation_Id
+			,empv.Designation
+			,empv.DOJ
+			,empv.DOR
+			,empv.Contact_No
+			,empv.Email_Id
+			,empv.Gender_Id
+			,empv.Gender
+			,empv.[Address]
+			,empv.IsManual
+			,empv.IsSeniorCitizen
+			,empv.IsDCPS
+			,empv.InsertedOn
+			,empv.InsertedBy
+			,empv.UpdatedOn
+			,empv.updatedBy
+			,empv.[Status]
+			,empv.Bank_Id
+			,empv.Bank_Name
+			,empv.IFSC_Code
+			,empv.Account_No
+			,empv.GPF_DCPS_AccountNo
+			,empv.BankStatus
+			,Transferred=CASE WHEN empv.DDO_Code!=@DDOCode THEN 'Y'
+								ELSE 'N' END
+			,IsPaybill='N'
+	FROM dbo.EmployeeDetails_v1 empv		
+	WHERE empv.DDO_Code=@DDOCode AND empv.IsManual='Y' and empv.Status='Y'
+
+
 	RETURN(0)
 
 spError:

@@ -28,11 +28,12 @@ BEGIN
 		Case when o.Profile_Status IS NULL 
 				then 0 
 			  Else o.Profile_Status 
-	     END as Profile_Status
+	     END as Profile_Status,
+		 o.[Status]
 	FROM [dbo].[TDS_t_Office_Details] o with(nolock)
 	LEFT JOIN [dbo].[TDS_t_Office_DDODetails] d	with(nolock) on o.Office_Id=d.Office_Id
 	JOIN [dbo].[TDS_t_City] c with(nolock) ON o.City_Id=c.City_Id
-	Where o.[Status]='Y' --and o.[Office_Id]<>1
+	--Where o.[Status]='Y' --and o.[Office_Id]<>1
 
 	RETURN(0)
 

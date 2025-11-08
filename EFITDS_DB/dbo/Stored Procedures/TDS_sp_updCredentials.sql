@@ -25,21 +25,46 @@ BEGIN
 			@GetDate Datetime
 
 	--Get Current Date
-	Select @GetDate=Getdate()
-		
-	--Update the Client Credentials.
-	UPDATE [dbo].[TDS_t_Office_Credentials]
-	SET [User_Id]=@userId,
-		[Password]=@password,
-		[Status]=@status
-	WHERE Office_Id=@officeId
-		  AND Credential_Id=@credentialId
+	Select @GetDate=Getdate()	
 
-	IF(@@ROWCOUNT=0)
+	IF EXISTS(SELECT Id FROM [dbo].[TDS_t_Office_Credentials] WHERE Office_Id=@officeId AND Credential_Id=@credentialId)
 	BEGIN
-		Select @ErrMsg='Error updating client credential for userId:- '+CAST(@userId as VARCHAR)
-		GOTO spError
+		--Update the Client Credentials.
+		UPDATE [dbo].[TDS_t_Office_Credentials]
+		SET [User_Id]=@userId,
+			[Password]=@password,
+			[Status]=@status
+		WHERE Office_Id=@officeId
+			  AND Credential_Id=@credentialId
+
+		IF(@@ROWCOUNT=0)
+		BEGIN
+			Select @ErrMsg='Error updating client credential for userId:- '+CAST(@userId as VARCHAR)
+			GOTO spError
+		END
 	END
+	ELSE
+	BEGIN
+		-- Insert New Credential If nt exists
+		INSERT INTO [dbo].[TDS_t_Office_Credentials]
+					([Office_Id]
+					,[Credential_Id]
+					,[User_Id]
+					,[Password]
+					,[Status]
+					)
+			  VALUES(@officeId
+					,@credentialId
+					,@userId
+					,@password
+					,@status)
+
+		IF(@@ROWCOUNT=0)
+		BEGIN
+			Select @ErrMsg='Error inserting client credential for userId:- '+CAST(@userId as VARCHAR)
+			GOTO spError
+		END
+	END	
 
 	RETURN(0)
 

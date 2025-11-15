@@ -28,9 +28,11 @@ AS
 		v.Bill_Year,
 		v.PayBill_Type,
 		v.Form_Type,
+		v.SubForm_Type,
 		v.Vourcher_Date,
 		v.Voucher_No,
 		v.Voucher_Amount,
+		v.SourceId,
 		Source=	CASE WHEN v.SourceId=1 THEN 'Sevaarth'
 					 WHEN v.SourceId=2 THEN 'Koshwahini'
 					 WHEN v.SourceId=3 THEN 'Olttas'
@@ -41,7 +43,7 @@ AS
 					 WHEN v.SourceId=3 THEN 'NA'
 				ELSE 'UnMatched'
 				END,
-		Bin=	CASE WHEN v.SourceId in(1,2) AND (v.IsBinview='Y' OR (v.IsBinview='N' AND v.Voucher_Amount=0))
+		Bin=	CASE WHEN v.SourceId in(1,2) AND (v.IsBinview='Y' OR (v.IsBinview='N' AND v.Voucher_Amount=0) OR ((v.IsBinview='N' OR v.IsBinview IS NULL) AND (v.SubForm_Type IS NOT NULL OR v.SubForm_Type<>'')))
 					THEN 'Matched' 
 					 WHEN v.SourceId=3 THEN 'NA'
 				ELSE 'UnMatched'

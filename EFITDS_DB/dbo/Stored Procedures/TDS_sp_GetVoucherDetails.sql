@@ -35,9 +35,11 @@ BEGIN
 			,v.Bill_Year
 			,v.PayBill_Type
 			,v.Form_Type
+			,v.SubForm_Type
 			,v.Vourcher_Date
 			,v.Voucher_No
 			,v.Voucher_Amount
+			,v.SourceId
 			,v.Source
 			,v.Kosh
 			,v.Bin
@@ -47,6 +49,7 @@ BEGIN
 	WHERE v.DDO_Code=@DDOCode
 		AND v.Vourcher_Date >=@FromDate AND v.Vourcher_Date<=@ToDate
 		AND (@FormType IS NULL OR v.Form_Type=@FormType)
+	ORDER BY v.Vourcher_Date,v.Voucher_No
 
 	RETURN(0)
 

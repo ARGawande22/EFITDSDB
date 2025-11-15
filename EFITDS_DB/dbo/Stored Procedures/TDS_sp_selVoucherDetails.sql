@@ -31,6 +31,7 @@ BEGIN
 			,Bill_Year
 			,PayBill_Type
 			,Form_Type
+			,SubForm_Type
 			,Vourcher_Date
 			,Voucher_No
 			,Voucher_Amount
@@ -64,7 +65,7 @@ BEGIN
 		LEFT JOIN [dbo].[TDS_t_UserLogin] ul1 with(nolock) on vd.updatedBy=ul1.login_Id
 	WHERE DDO_Code=@DDOCode 
 			AND Vourcher_Date>=@FromDate AND Vourcher_Date <=@ToDate
-			AND ((@IsBinMatching=1 AND SourceId IN(1,2) AND Voucher_Amount>0) OR (@IsBinMatching=0 AND SourceId IN(1,2,3)))
+			AND ((@IsBinMatching=1 AND SourceId IN(1,2) AND Voucher_Amount>0 AND (SubForm_Type is NULL OR SubForm_Type='')) OR (@IsBinMatching=0 AND SourceId IN(1,2,3)))
 	ORDER BY Vourcher_Date,Voucher_No
 
 	IF(@@ERROR <> 0)

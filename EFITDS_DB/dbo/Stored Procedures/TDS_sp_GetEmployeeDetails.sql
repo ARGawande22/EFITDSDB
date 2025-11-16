@@ -132,7 +132,7 @@ UNION
 								ELSE 'N' END
 			,IsPaybill='N'
 	FROM dbo.EmployeeDetails_v1 empv		
-	WHERE empv.DDO_Code=@DDOCode AND empv.IsManual='Y' and empv.Status='Y'
+	WHERE empv.DDO_Code=@DDOCode AND empv.IsManual='Y' --and empv.Status='Y'
 
 
 	RETURN(0)

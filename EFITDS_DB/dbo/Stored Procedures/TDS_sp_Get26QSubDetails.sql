@@ -35,9 +35,9 @@ BEGIN
 			,sd.Pan_Status
 			,sd.DDO_Code
 			,sd.Voucher_Id
-			,FinYear=ISNULL(vd.Fin_Year, sd.Fin_Year)
-			,FinYear=ISNULL(vd.Vourcher_Date, sd.Vourcher_Date)
-			,FinYear=ISNULL(vd.Voucher_No, sd.Voucher_No)
+			,Fin_Year=ISNULL(vd.Fin_Year, sd.Fin_Year)
+			,Vourcher_Date=ISNULL(vd.Vourcher_Date, sd.Vourcher_Date)
+			,Voucher_No=ISNULL(vd.Voucher_No, sd.Voucher_No)
 			,sd.Income_Tax
 			,sd.Gross_Amt
 			,sd.Section_Id

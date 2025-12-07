@@ -2,7 +2,8 @@ USE TDSLive;
 GO
 
 Create OR Alter Procedure [dbo].[TDS_sp_GetEmployeeSalDetails]
-	@VoucherId INT
+	@VoucherId INT,
+	@YearlyId Int=0
 
 --***********************************************************
 --***
@@ -240,6 +241,7 @@ BEGIN
 	FROM dbo.EmployeeDetails_v0 ed
 		INNER JOIN dbo.EmployeeData_v0 eyd ON ed.Sevaarth_Id=eyd.Sevaarth_Id
 	WHERE eyd.Voucher_Id=@VoucherId
+	AND ((@YearlyId =0) OR (eyd.Yealy_Id=@YearlyId))
 	ORDER BY ed.Sevaarth_Id
 
 	RETURN(0)

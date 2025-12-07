@@ -5,6 +5,7 @@ Create Procedure [dbo].[TDS_sp_delVoucherEmp]
 	@EmpId NVARCHAR(15)=NULL
 	,@VoucherId INT
 	,@YearlyId INT
+	,@SourceId INT
 	,@FormType NVARCHAR(5)
 	,@loginId INT
 --***********************************************************
@@ -26,7 +27,16 @@ BEGIN
 	BEGIN
 	  IF EXISTS (SELECT * FROM [dbo].[TDS_t_EmpYearly_Details] WHERE Yealy_Id=@YearlyId AND  Voucher_Id=@VoucherId AND Sevaarth_Id=@EmpId)
 		BEGIN
-			DELETE  FROM [dbo].[TDS_t_EmpYearly_Details] WHERE Yealy_Id=@YearlyId AND  Voucher_Id=@VoucherId AND Sevaarth_Id=@EmpId 
+			If @SourceId=1
+				BEGIN
+					UPDATE ey SET ey.[Status]=CASE WHEN ey.[Status]='Y' THEN 'N' ELSE 'Y' END 
+					FROM [dbo].[TDS_t_EmpYearly_Details] ey
+					WHERE ey.Yealy_Id=@YearlyId AND  ey.Voucher_Id=@VoucherId AND ey.Sevaarth_Id=@EmpId
+				END
+			ELSE
+				BEGIN
+					DELETE  FROM [dbo].[TDS_t_EmpYearly_Details] WHERE Yealy_Id=@YearlyId AND  Voucher_Id=@VoucherId AND Sevaarth_Id=@EmpId 
+				END
 		END
 	END
 	ELSE

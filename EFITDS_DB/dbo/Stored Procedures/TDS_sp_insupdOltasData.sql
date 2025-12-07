@@ -1,8 +1,8 @@
 ﻿
 Create   Procedure [dbo].[TDS_sp_insupdOltasData]
 	@loginId INT
-	,@DDOCode NVARCHAR(10)
-	,@FinYear NVARCHAR(11)
+	,@DDOCode NVARCHAR(10) = NULL
+	,@FinYear NVARCHAR(11) = NULL
 	,@Oltasxml TEXT
 	,@Status INT  OUTPUT
 --***********************************************************

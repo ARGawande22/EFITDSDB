@@ -1,7 +1,36 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Views\\EmployeeData_v0.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|solutionrelative:dbo\\Views\\EmployeeData_v0.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Stored Procedures\\TDS_sp_GetVoucherDetails.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|solutionrelative:dbo\\Stored Procedures\\TDS_sp_GetVoucherDetails.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Views\\SelVoucher_v0.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|solutionrelative:dbo\\Views\\SelVoucher_v0.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Stored Procedures\\TDS_sp_selVoucherDetails.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|solutionrelative:dbo\\Stored Procedures\\TDS_sp_selVoucherDetails.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Stored Procedures\\TDS_sp_insupdKoshData.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|solutionrelative:dbo\\Stored Procedures\\TDS_sp_insupdKoshData.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Stored Procedures\\TDS_sp_GetVoucherDetails.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
+      "RelativeMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|solutionrelative:dbo\\Stored Procedures\\TDS_sp_GetVoucherDetails.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Views\\EmployeeData_v0.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
+      "RelativeMoniker": "D:0:0:{195DAB71-B662-4B40-B7BB-315B1C867AF2}|EFITDS_DB.sqlproj|solutionrelative:dbo\\Views\\EmployeeData_v0.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,11 +38,66 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "EmployeeData_v0.sql ",
+              "DocumentMoniker": "D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Views\\EmployeeData_v0.sql",
+              "RelativeDocumentMoniker": "dbo\\Views\\EmployeeData_v0.sql",
+              "ToolTip": "D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Views\\EmployeeData_v0.sql\r\n(localdb)\\ProjectModels.EFITDS_DB\r\n(AROHI\\Aru)",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-10-02T10:15:07.324Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "TDS_sp_GetVoucherDetails.sql ",
+              "DocumentMoniker": "D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Stored Procedures\\TDS_sp_GetVoucherDetails.sql",
+              "RelativeDocumentMoniker": "dbo\\Stored Procedures\\TDS_sp_GetVoucherDetails.sql",
+              "ToolTip": "D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Stored Procedures\\TDS_sp_GetVoucherDetails.sql\r\n(localdb)\\ProjectModels.EFITDS_DB\r\n(AROHI\\Aru)",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-09-13T09:54:02.704Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "TDS_sp_selVoucherDetails.sql",
+              "DocumentMoniker": "D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Stored Procedures\\TDS_sp_selVoucherDetails.sql",
+              "RelativeDocumentMoniker": "dbo\\Stored Procedures\\TDS_sp_selVoucherDetails.sql",
+              "ToolTip": "D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Stored Procedures\\TDS_sp_selVoucherDetails.sql\r\n(localdb)\\ProjectModels.EFITDS_DB\r\n(AROHI\\Aru)",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-09-13T09:50:15.274Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "SelVoucher_v0.sql",
+              "DocumentMoniker": "D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Views\\SelVoucher_v0.sql",
+              "RelativeDocumentMoniker": "dbo\\Views\\SelVoucher_v0.sql",
+              "ToolTip": "D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Views\\SelVoucher_v0.sql\r\n(localdb)\\ProjectModels.EFITDS_DB\r\n(AROHI\\Aru)",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-09-13T09:49:55.138Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "TDS_sp_insupdKoshData.sql",
+              "DocumentMoniker": "D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Stored Procedures\\TDS_sp_insupdKoshData.sql",
+              "RelativeDocumentMoniker": "dbo\\Stored Procedures\\TDS_sp_insupdKoshData.sql",
+              "ToolTip": "D:\\Projects\\2.Working On\\TDS_New\\Desktop\\EFITDSDB\\EFITDS_DB\\dbo\\Stored Procedures\\TDS_sp_insupdKoshData.sql\r\n(localdb)\\ProjectModels.EFITDS_DB\r\n(AROHI\\Aru)",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-09-13T09:28:36.76Z",
+              "EditorCaption": ""
             }
           ]
         }

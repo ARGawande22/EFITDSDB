@@ -20,10 +20,16 @@ BEGIN
 			@LoginID SMALLINT
 
 	--Verify User Exists
+	--SELECT @LoginID=login_Id
+	--FROM  [dbo].[TDS_t_UserLogin]
+	--Where [User_Id]=@UserId and [Password]=@Password
+	--and Status='Y'
+
 	SELECT @LoginID=login_Id
-	FROM  [dbo].[TDS_t_UserLogin]
+	FROM  [dbo].[TDS_t_UserLogin] l with(nolock)
+	 JOIN [dbo].[TDS_t_Office_Details] o with(nolock) ON l.Office_Id=o.Office_Id
 	Where [User_Id]=@UserId and [Password]=@Password
-	and Status='Y'
+	and l.Status='Y' AND o.[Status]='Y'
 
 	IF(@@ROWCOUNT=0)
 	BEGIN

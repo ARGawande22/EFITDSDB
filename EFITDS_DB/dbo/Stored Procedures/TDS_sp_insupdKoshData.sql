@@ -42,6 +42,7 @@ BEGIN
 	CREATE TABLE #KoshDetails(
 				[Quarter]		nvarchar(3)		 NOT NULL,
 				Form_Type		nvarchar(3)		 NOT NULL,
+				SubForm_Type	nvarchar(MAX)	 NULL,
 				Vourcher_Date	date			 NOT NULL,
 				Voucher_No		int				 NOT NULL,
 				Voucher_Amount	decimal(18, 0)	 NOT NULL
@@ -55,12 +56,21 @@ BEGIN
 
 	INSERT INTO #KoshDetails(
 					[Quarter],
-					Form_Type,					Vourcher_Date,					Voucher_No,					Voucher_Amount)
+					Form_Type,
+					SubForm_Type,
+					Vourcher_Date,
+					Voucher_No,
+					Voucher_Amount)
 		SELECT		[Quarter],
-					Form_Type,					Vourcher_Date=CASE WHEN Vourcher_Date=CAST('0001-01-01' as date) THEN NULL ELSE Vourcher_Date END,					Voucher_No,					Voucher_Amount
+					Form_Type,
+					SubForm_Type,
+					Vourcher_Date=CASE WHEN Vourcher_Date=CAST('0001-01-01' as date) THEN NULL ELSE Vourcher_Date END,
+					Voucher_No,
+					Voucher_Amount
 			FROM OPENXML(@XMLDocumentHandle ,'/KoshVouchers/KoshwahiniVoucher', 2) WITH
 						   ([Quarter]			nvarchar(3) 'Quarter',
 							Form_Type			nvarchar(3) 'FormType',
+							SubForm_Type		nvarchar(Max) 'SubFormType',
 							Vourcher_Date		date 'VoucherDate',
 							Voucher_No			Int 'VoucherNo' ,
 							Voucher_Amount		Decimal 'VoucherAmount')
@@ -76,39 +86,42 @@ BEGIN
 
     DECLARE @Quarter				NVARCHAR(3),
 			@Form_Type				NVARCHAR(3),
+			@SubForm_Type			NVARCHAR(MAX),
 			@VoucherNo				Int,
 			@VoucherDate			Datetime,
 			@VoucherAmount			Decimal 
 
 	DECLARE K CURSOR LOCAL READ_ONLY FOR
-	SELECT [Quarter],Form_Type,Vourcher_Date,Voucher_No,Voucher_Amount FROM #KoshDetails 
+	SELECT [Quarter],Form_Type,SubForm_Type,Vourcher_Date,Voucher_No,Voucher_Amount FROM #KoshDetails 
 	OPEN K
-		FETCH NEXT FROM K INTO @Quarter,@Form_Type,@VoucherDate,@VoucherNo,@VoucherAmount	
+		FETCH NEXT FROM K INTO @Quarter,@Form_Type,@SubForm_Type,@VoucherDate,@VoucherNo,@VoucherAmount	
 		WHILE (@@FETCH_STATUS<>-1)
 		BEGIN
 			IF(@@FETCH_STATUS<>-2)
 			BEGIN
 				--[1]. Checking  voucher Exist or Not
 				SET @Voucher_Id=(SELECT Voucher_Id FROM [dbo].[TDS_t_Voucher_Details] WHERE DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate
-												and Voucher_Amount=@VoucherAmount and [Quarter]=@Quarter and SourceId in(1,2) and [Status]='Y')
+												and Voucher_Amount=@VoucherAmount and [Quarter]=@Quarter and SourceId in(1,2) and ([Status]='Y' OR [Status]='N'))
 
 				SET @SourceId=(SELECT SourceId FROM [dbo].[TDS_t_Voucher_Details] WHERE DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate
-												and Voucher_Amount=@VoucherAmount and [Quarter]=@Quarter and SourceId in(1,2) and [Status]='Y')
-				IF(@Voucher_Id<>0)
+												and Voucher_Amount=@VoucherAmount and [Quarter]=@Quarter and SourceId in(1,2) and ([Status]='Y' OR [Status]='N'))
+				IF(@Voucher_Id>0)
 				BEGIN
-					UPDATE [dbo].[TDS_t_Voucher_Details] SET Form_Type=CASE WHEN @SourceId=1 THEN Form_Type ELSE @Form_Type END,IsKoshwahini='Y',IsOltas='N',
+				UPDATE [dbo].[TDS_t_Voucher_Details] SET Form_Type=CASE WHEN @SourceId=1 THEN Form_Type ELSE @Form_Type END,
+																SubForm_Type=@SubForm_Type,IsKoshwahini='Y',IsOltas='N',
 								UpdatedOn=@GetDate,updatedBy=@loginId
 					WHERE Voucher_Id=@Voucher_Id					
 				END
 				ELSE
 				BEGIN
-					INSERT INTO [dbo].[TDS_t_Voucher_Details](DDO_Code,Fin_Year,[Quarter],Form_Type,Vourcher_Date,Voucher_No,Voucher_Amount,IsKoshwahini,IsOltas,SourceId,
+					INSERT INTO [dbo].[TDS_t_Voucher_Details](DDO_Code,Fin_Year,[Quarter],Form_Type,SubForm_Type,Vourcher_Date,Voucher_No,Voucher_Amount,IsKoshwahini,IsOltas,SourceId,
 															InsertedOn,InsertedBy,[Status]) 
-						   VALUES(@DDOCode,@FinYear,@Quarter,@Form_Type,@VoucherDate,@VoucherNo,@VoucherAmount,'Y','N',2,@GetDate,@loginId,'Y')
-					SET @Voucher_Id=@@IDENTITY;
+						   VALUES(@DDOCode,@FinYear,@Quarter,@Form_Type,@SubForm_Type,@VoucherDate,@VoucherNo,@VoucherAmount,'Y','N',2,@GetDate,@loginId,'N')
+				
+				SET @Voucher_Id=@@IDENTITY;	
 				END
 			END
-			FETCH NEXT FROM K INTO @Quarter,@Form_Type,@VoucherDate,@VoucherNo,@VoucherAmount
+			FETCH NEXT FROM K INTO @Quarter,@Form_Type,@SubForm_Type,@VoucherDate,@VoucherNo,@VoucherAmount
 		END
 	CLOSE K
 	DEALLOCATE K

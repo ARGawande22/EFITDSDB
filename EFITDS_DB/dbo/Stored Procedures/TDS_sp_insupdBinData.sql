@@ -103,7 +103,7 @@ BEGIN
 					END
 
 					UPDATE [dbo].[TDS_t_Voucher_Details] SET IsBinview='Y' 
-					WHERE Voucher_Id IN (SELECT value FROM STRING_SPLIT(@Voucher_Ids, ',')) AND DDO_Code=@DDOCode
+					WHERE Voucher_Id IN (SELECT * FROM [dbo].[SplitString](@Voucher_Ids, ','))  AND DDO_Code=@DDOCode--(SELECT value FROM STRING_SPLIT(@Voucher_Ids, ',')) AND DDO_Code=@DDOCode
 
 					IF(@@ERROR <> 0)
 					BEGIN
@@ -123,7 +123,7 @@ BEGIN
 					END
 
 					UPDATE [dbo].[TDS_t_Voucher_Details] SET IsBinview='Y' 
-					WHERE Voucher_Id IN (SELECT value FROM STRING_SPLIT(@Voucher_Ids, ',')) AND DDO_Code=@DDOCode
+					WHERE Voucher_Id IN (SELECT * FROM [dbo].[SplitString](@Voucher_Ids, ',')) AND DDO_Code=@DDOCode
 
 					IF(@@ERROR <> 0)
 					BEGIN

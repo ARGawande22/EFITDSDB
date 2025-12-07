@@ -105,6 +105,7 @@ BEGIN
 			AIN_No=c.AIN_No,
 			[Address]=c.[Address],
 			City_Id=c.City_Id,
+			Office_PANNo=c.Office_PanNo,
 			PinCode=c.PinCode,
 			Contact_No=c.Contact_No,
 			Email_Id=c.Email_Id,

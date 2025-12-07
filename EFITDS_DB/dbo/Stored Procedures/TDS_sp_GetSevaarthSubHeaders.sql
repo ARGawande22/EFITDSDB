@@ -24,21 +24,34 @@ BEGIN
 	END
 				
 
+	----Get Sevaarth Sub Header Information
+	--IF @Header_Id <> 0
+	--  BEGIN
+	--	SELECT
+	--		h.Header_Id,			
+	--		sh.Details_Id,
+	--		sh.DetailHeader_Name,
+	--		sh.Status
+	--	FROM [dbo].[TDS_t_Header] h with(nolock)
+	--		JOIN [dbo].[TDS_t_HeadersDetails] sh with(nolock) ON h.Header_Id=sh.Header_Id
+	--	WHERE sh.Status='Y' and h.Header_Id=@Header_Id
+	--	ORDER BY sh.Details_Id
+	--  END
+	--ELSE
+	--  BEGIN
+	--    Select
+	--		h.Header_Id,			
+	--		sh.Details_Id,
+	--		sh.DetailHeader_Name,
+	--		sh.Status
+	--	FROM [dbo].[TDS_t_Header] h with(nolock)
+	--		JOIN [dbo].[TDS_t_HeadersDetails] sh with(nolock) ON h.Header_Id=sh.Header_Id
+	--	WHERE sh.Status='Y'
+	--	ORDER BY sh.Details_Id
+	--  END
+
+
 	--Get Sevaarth Sub Header Information
-	IF @Header_Id <> 0
-	  BEGIN
-		SELECT
-			h.Header_Id,			
-			sh.Details_Id,
-			sh.DetailHeader_Name,
-			sh.Status
-		FROM [dbo].[TDS_t_Header] h with(nolock)
-			JOIN [dbo].[TDS_t_HeadersDetails] sh with(nolock) ON h.Header_Id=sh.Header_Id
-		WHERE sh.Status='Y' and h.Header_Id=@Header_Id
-		ORDER BY sh.Details_Id
-	  END
-	ELSE
-	  BEGIN
 	    Select
 			h.Header_Id,			
 			sh.Details_Id,
@@ -46,9 +59,8 @@ BEGIN
 			sh.Status
 		FROM [dbo].[TDS_t_Header] h with(nolock)
 			JOIN [dbo].[TDS_t_HeadersDetails] sh with(nolock) ON h.Header_Id=sh.Header_Id
-		WHERE sh.Status='Y'
+		WHERE sh.Status='Y' AND (@Header_Id=0 OR h.Header_Id=@Header_Id)
 		ORDER BY sh.Details_Id
-	  END
 
 	RETURN(0)
 

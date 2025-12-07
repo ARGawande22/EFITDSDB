@@ -1,5 +1,5 @@
-﻿
-
+﻿USE TDSLive;
+GO
 
 CREATE   FUNCTION [dbo].[GetOltasQuarter]
 (
@@ -17,20 +17,19 @@ BEGIN
 	SELECT @Year1=PARSENAME(REPLACE(@FinYear, '-', '.'), 2), 
        @Year2='20'+PARSENAME(REPLACE(@FinYear, '-', '.'), 1)
 
-   IF(@Challan_Date>=FORMAT(CONVERT(DATE,('10-04-'+@Year1)),'dd-MM-yyyy') AND @Challan_Date<FORMAT(CONVERT(DATE,('10-07-'+@Year1)),'dd-MM-yyyy'))
+   IF(@Challan_Date>=DATEFROMPARTS(@Year1,04,10) AND @Challan_Date<DATEFROMPARTS(@Year1,07,10))
 	BEGIN
 		SET @Result='Q1'
 	END
-   ELSE IF(@Challan_Date>=FORMAT(CONVERT(DATE,('10-07-'+@Year1)),'dd-MM-yyyy') AND @Challan_Date<FORMAT(CONVERT(DATE,('10-10-'+@Year1)),'dd-MM-yyyy'))
+   ELSE IF(@Challan_Date>=DATEFROMPARTS(@Year1,07,10) AND @Challan_Date<DATEFROMPARTS(@Year1,10,10))
 	BEGIN
 		SET @Result='Q2'
 	END
-   ELSE
-   IF(@Challan_Date>=FORMAT(CONVERT(DATE,('10-10-'+@Year1)),'dd-MM-yyyy') AND @Challan_Date<FORMAT(CONVERT(DATE,('10-01-'+@Year2)),'dd-MM-yyyy'))
+   ELSE IF(@Challan_Date>=DATEFROMPARTS(@Year1,10,10) AND @Challan_Date<DATEFROMPARTS(@Year2,01,10))
 	 BEGIN
 		SET @Result='Q3'
 	 END
-   ELSE IF(@Challan_Date>=FORMAT(CONVERT(DATE,('10-01-'+@Year2)),'dd-MM-yyyy') AND @Challan_Date<FORMAT(CONVERT(DATE,('10-04-'+@Year2)),'dd-MM-yyyy'))
+   ELSE IF(@Challan_Date>=DATEFROMPARTS(@Year2,01,10) AND @Challan_Date<DATEFROMPARTS(@Year2,04,10))
 	BEGIN
 		SET @Result='Q4'
 	END

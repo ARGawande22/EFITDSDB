@@ -47,7 +47,7 @@ BEGIN
 	FROM dbo.TDS_t_26QSub_Details sd	    
 		INNER JOIN dbo.TDS_t_ITSection s ON sd.Section_Id=s.Section_Id
 		LEFT JOIN dbo.TDS_t_Voucher_Details  vd ON sd.Voucher_Id=vd.Voucher_Id
-	WHERE sd.Voucher_Id=@VoucherId
+	WHERE sd.Voucher_Id=@VoucherId and sd.[Status]='Y'
 	ORDER BY sd.Yealy_Id
 
 	RETURN(0)

@@ -3,6 +3,8 @@
     [Sevaarth_Id]   NVARCHAR (15) NULL,
     [CurDDO_Code]   NCHAR (10)    NULL,
     [ExtDDO_Code]   NVARCHAR (11) NULL,
+    [ValidFrom] [datetime] NULL,
+	[ValidTo] [datetime] NULL,
     [Transfer_Date] DATE          NULL,
     [Status]        NVARCHAR (1)  NULL,
     CONSTRAINT [PK_EmpTransfer_History] PRIMARY KEY CLUSTERED ([Transfer_Id] ASC),

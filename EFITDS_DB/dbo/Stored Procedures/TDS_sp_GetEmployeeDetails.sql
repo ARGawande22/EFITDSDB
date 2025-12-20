@@ -41,7 +41,7 @@ BEGIN
 	--[1]. Get the SevaarthIds for FinYear
 	INSERT INTO #SevaarthIds(Sevaarth_Id,PaybillCnt)
 				SELECT eyd.Sevaarth_Id
-					   ,Count(eyd.PayBill_Type)
+					   ,Count(*)
 				FROM [dbo].[TDS_t_EmpYearly_Details] eyd WITH(NOLOCK)
 					JOIN [dbo].[TDS_t_Voucher_Details] vd WITH(NOLOCK) ON eyd.Voucher_Id=vd.Voucher_Id
 				WHERE eyd.DDO_Code=@DDOCode AND vd.Vourcher_Date>=@FromDate AND vd.Vourcher_Date<=@ToDate

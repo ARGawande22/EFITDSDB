@@ -43,7 +43,7 @@ AS
 					 WHEN v.SourceId=3 THEN 'NA'
 				ELSE 'UnMatched'
 				END,
-		Bin=	CASE WHEN v.SourceId in(1,2) AND (v.IsBinview='Y' OR (v.IsBinview='N' AND v.Voucher_Amount=0) OR ((v.IsBinview='N' OR v.IsBinview IS NULL) AND (v.SubForm_Type IS NOT NULL OR v.SubForm_Type<>'')))
+		Bin=	CASE WHEN v.SourceId in(1,2) AND (v.IsBinview='Y' OR (v.IsBinview='N' AND v.Voucher_Amount=0) OR ((v.IsBinview='N' OR v.IsBinview IS NULL) AND (v.SubForm_Type IS NOT NULL AND v.SubForm_Type<>'')))
 					THEN 'Matched' 
 					 WHEN v.SourceId=3 THEN 'NA'
 				ELSE 'UnMatched'

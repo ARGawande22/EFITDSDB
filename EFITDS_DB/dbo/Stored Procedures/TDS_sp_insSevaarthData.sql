@@ -1,7 +1,10 @@
-﻿
+﻿Use TDSLive
+GO
+
 Create   Procedure [dbo].[TDS_sp_insSevaarthData]
 	@loginId INT
-	,@Sevaarthxml TEXT
+	,@VDate	 DATETIME=Null      --Just for Managing Emp Transfer History
+	,@Sevaarthxml TEXT	
 	,@Status INT  OUTPUT
 --***********************************************************
 --***
@@ -26,6 +29,11 @@ BEGIN
 			
 
 	SET @GetDate=GETDATE();
+
+	IF @VDate IS NULL
+	BEGIN
+		SET @VDate=@GetDate
+	END
 
 	--open & prepare the XML document for reading into temporary tables.
 	EXEC @XMLPrepared=sp_XML_preparedocument @XMLDocumentHandle OUTPUT,@Sevaarthxml
@@ -848,6 +856,10 @@ BEGIN
 						DBO_AsPerSevaarth=@DBO_AsPerSevaarth
 					WHERE Sevaarth_Id=@Sevaarth_Id
 				 END
+
+				---[2.1]. Manage the Emp Existing Transfer History
+				EXEC [dbo].[TDS_sp_ins_updEmpTransferHistoryBySevaarthId] @DDO_Code=@DDO_Code,@Sevaarth_Id=@Sevaarth_Id,@VDate=@VDate,@Result=@rc OUTPUT
+
 
 				--[3]. Insert Employee Yearly Details.
 				SET @Yealy_Id =(SELECT Yealy_Id FROM [dbo].[TDS_t_EmpYearly_Details] where Sevaarth_Id=@Sevaarth_Id AND Voucher_Id=@Voucher_Id AND DDO_Code=@DDO_Code)

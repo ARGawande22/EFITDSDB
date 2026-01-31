@@ -507,52 +507,83 @@ BEGIN
 --[1].  Update Employee transfer History
 	DECLARE @EmpCurDDOCode NVARCHAR(10)
 	SELECT @EmpCurDDOCode=DDO_Code FROM [dbo].[TDS_t_Emp_Details] Where Sevaarth_Id=@Sevaarth_Id
-	IF @EmpCurDDOCode<>@CurDDOCode
+	--IF @EmpCurDDOCode<>@CurDDOCode
+	--	BEGIN
+	--		UPDATE e
+	--		SET e.DDO_Code=@CurDDOCode
+	--			,e.Name_AsPerSevaarth= CASE WHEN e.Name_AsPerSevaarth=@Name_AsPerSevaarth THEN e.Name_AsPerSevaarth ELSE @Name_AsPerSevaarth END
+	--			,e.Gender_Id= CASE WHEN e.Gender_Id IS NULL THEN @Gender_Id ELSE e.Gender_Id END
+	--			,e.DBO_AsPerSevaarth=CASE WHEN e.DBO_AsPerSevaarth IS NULL THEN @DBO_AsPerSevaarth ELSE e.DBO_AsPerSevaarth END
+	--		FROM [dbo].[TDS_t_Emp_Details] AS e
+	--		WHERE e.Sevaarth_Id=@Sevaarth_Id
+	--	END
+	--ELSE
+	--	BEGIN
+	--		UPDATE e
+	--		SET e.Name_AsPerSevaarth= CASE WHEN e.Name_AsPerSevaarth=@Name_AsPerSevaarth THEN e.Name_AsPerSevaarth ELSE @Name_AsPerSevaarth END
+	--			,e.Gender_Id= CASE WHEN e.Gender_Id IS NULL THEN @Gender_Id ELSE e.Gender_Id END
+	--			,e.DBO_AsPerSevaarth=CASE WHEN e.DBO_AsPerSevaarth IS NULL THEN @DBO_AsPerSevaarth ELSE e.DBO_AsPerSevaarth END
+	--		FROM [dbo].[TDS_t_Emp_Details] AS e
+	--		WHERE e.Sevaarth_Id=@Sevaarth_Id
+	--	END
+	UPDATE e
+	SET e.DDO_Code=CASE WHEN @EmpCurDDOCode<>@CurDDOCode THEN @CurDDOCode ELSE e.DDO_Code END
+		,e.Name_AsPerSevaarth= CASE WHEN e.Name_AsPerSevaarth=@Name_AsPerSevaarth THEN e.Name_AsPerSevaarth ELSE @Name_AsPerSevaarth END
+		,e.Gender_Id= CASE WHEN e.Gender_Id IS NULL THEN @Gender_Id ELSE e.Gender_Id END
+		,e.DBO_AsPerSevaarth=CASE WHEN e.DBO_AsPerSevaarth IS NULL THEN @DBO_AsPerSevaarth ELSE e.DBO_AsPerSevaarth END
+	FROM [dbo].[TDS_t_Emp_Details] AS e
+	WHERE e.Sevaarth_Id=@Sevaarth_Id
+
+
+	
+--[2]. Update/Add the Current DDO_Code Transfer Entry
+	SELECT @Transfer_Id=Transfer_Id ,@TansferCurDDOCode=CurDDO_Code
+	FROM [dbo].[TDS_t_EmpTransfer_History]
+	WHERE Sevaarth_Id=@Sevaarth_Id AND ValidTo=@SystemEndDate and [Status]='Y'
+
+	IF(@Transfer_Id IS NULL OR @Transfer_Id <=0)
+	BEGIN
+		INSERT INTO [dbo].[TDS_t_EmpTransfer_History](Sevaarth_Id,CurDDO_Code,ExtDDO_Code,ValidFrom,ValidTo,Transfer_Date,Status)
+		VALUES(@Sevaarth_Id,@CurDDOCode,NULL,@CurDDOJoiningDate,@SystemEndDate,NULL,'Y')
+	END
+	ELSE IF @TansferCurDDOCode <> @CurDDOCode
+	BEGIN
+		UPDATE et
+		SET	et.ValidTo=@CurDDOJoiningDate
+			,et.Transfer_Date=@CurDDOJoiningDate
+			,et.[Status]='Y'
+		FROM [dbo].[TDS_t_EmpTransfer_History] et 
+		WHERE Transfer_Id=@Transfer_Id
+
+		IF @@ROWCOUNT > 0
 		BEGIN
-			UPDATE e
-			SET e.DDO_Code=@CurDDOCode
-				,e.Name_AsPerSevaarth= CASE WHEN e.Name_AsPerSevaarth=@Name_AsPerSevaarth THEN e.Name_AsPerSevaarth ELSE @Name_AsPerSevaarth END
-				,e.Gender_Id= CASE WHEN e.Gender_Id IS NULL THEN @Gender_Id ELSE e.Gender_Id END
-				,e.DBO_AsPerSevaarth=CASE WHEN e.DBO_AsPerSevaarth IS NULL THEN @DBO_AsPerSevaarth ELSE e.DBO_AsPerSevaarth END
-			FROM [dbo].[TDS_t_Emp_Details] AS e
-			WHERE e.Sevaarth_Id=@Sevaarth_Id
-
-			--[1.1]. Update Transfer History
-			SELECT @Transfer_Id=Transfer_Id ,@TansferCurDDOCode=CurDDO_Code
-			FROM [dbo].[TDS_t_EmpTransfer_History]
-			WHERE Sevaarth_Id=@Sevaarth_Id AND ValidTo=@SystemEndDate and [Status]='Y'
-
-			IF(@Transfer_Id IS NULL OR @Transfer_Id <=0)
-			BEGIN
-				INSERT INTO [dbo].[TDS_t_EmpTransfer_History](Sevaarth_Id,CurDDO_Code,ExtDDO_Code,ValidFrom,ValidTo,Transfer_Date,Status)
-				VALUES(@Sevaarth_Id,@CurDDOCode,NULL,@CurDDOJoiningDate,@SystemEndDate,NULL,'Y')
-			END
-			ELSE IF @TansferCurDDOCode <> @CurDDOCode
-			BEGIN
-				UPDATE et
-				SET	et.ValidTo=@CurDDOJoiningDate
-					,et.Transfer_Date=@CurDDOJoiningDate
-				FROM [dbo].[TDS_t_EmpTransfer_History] et 
-				WHERE Transfer_Id=@Transfer_Id
-
-				IF @@ROWCOUNT > 0
-				BEGIN
-					INSERT INTO [dbo].[TDS_t_EmpTransfer_History](Sevaarth_Id,CurDDO_Code,ExtDDO_Code,ValidFrom,ValidTo,Transfer_Date,Status)
-					VALUES(@Sevaarth_Id,@CurDDOCode,NULL,@CurDDOJoiningDate,@SystemEndDate,NULL,'Y')
-				END
-			END
+			INSERT INTO [dbo].[TDS_t_EmpTransfer_History](Sevaarth_Id,CurDDO_Code,ExtDDO_Code,ValidFrom,ValidTo,Transfer_Date,Status)
+			VALUES(@Sevaarth_Id,@CurDDOCode,NULL,@CurDDOJoiningDate,@SystemEndDate,NULL,'Y')
 		END
-	ELSE
+	END
+
+	--[3]. Manage the Emp Existing Transfer History
+		DECLARE @EmpTable [dbo].[EmpTransfer];
+
+		INSERT INTO @EmpTable(Sevaarth_Id,DDO_Code,MinDate,MaxDate)
+		SELECT Sevaarth_Id,DDO_Code,MIN(Vourcher_Date)as StartDae,Max(Vourcher_Date) as EndDate
+		FROM #LpcDetails
+		WHERE DDO_Code<>@CurDDOCode
+		GROUP BY Sevaarth_Id,DDO_Code
+
+		IF(Select COUNT(*) from @EmpTable)>0
 		BEGIN
-			UPDATE e
-			SET e.Name_AsPerSevaarth= CASE WHEN e.Name_AsPerSevaarth=@Name_AsPerSevaarth THEN e.Name_AsPerSevaarth ELSE @Name_AsPerSevaarth END
-				,e.Gender_Id= CASE WHEN e.Gender_Id IS NULL THEN @Gender_Id ELSE e.Gender_Id END
-				,e.DBO_AsPerSevaarth=CASE WHEN e.DBO_AsPerSevaarth IS NULL THEN @DBO_AsPerSevaarth ELSE e.DBO_AsPerSevaarth END
-			FROM [dbo].[TDS_t_Emp_Details] AS e
-			WHERE e.Sevaarth_Id=@Sevaarth_Id
-		END
+			EXEC [dbo].[TDS_sp_ins_updEmpTransferHistory] @EmpHistory=@EmpTable,@Status=@rc OUTPUT
 
---[2]. Insert Update LPC Bills
+			IF(@rc = 0)
+			BEGIN
+				Select @ErrMsg='Error Updating Emp existing transfer History'
+				GOTO spError
+			END
+		END		
+
+
+--[4]. Insert Update LPC Bills
 	DECLARE	@Gross_Id	INT,
 			@Recov_Id	INT,
 			@NonRec_Id	INT
@@ -820,7 +851,7 @@ BEGIN
 		BEGIN
 			IF(@@FETCH_STATUS<>-2)
 			BEGIN
-				--[2.1]. Emp voucher already present or Not
+				--[4.1]. Emp voucher already present or Not
 				SET @Yealy_Id =(SELECT Yealy_Id FROM [dbo].[TDS_t_EmpYearly_Details] where Sevaarth_Id=@Sevaarth_Id AND Voucher_Id=@Voucher_Id AND DDO_Code=@DDO_Code)
 				IF(@Yealy_Id IS NULL OR @Yealy_Id<=0)
 				BEGIN
@@ -836,7 +867,7 @@ BEGIN
 					SET @Yealy_Id=@@IDENTITY;
 				END
 
-				--[2.2]. Inserting Yearly Gross Details
+				--[4.2]. Inserting Yearly Gross Details
 				SET @Gross_Id=(SELECT Gross_Id FROM [dbo].[TDS_t_EmpYearlyGross_Details] Where Yealy_Id=@Yealy_Id)
 				IF(@Gross_Id IS NULL OR @Gross_Id<=0)
 				BEGIN
@@ -871,7 +902,7 @@ BEGIN
 					SET @Gross_Id=@@IDENTITY;
 				END
 
-				--[2.3]. Inserting Yearly Recoveries Details
+				--[4.3]. Inserting Yearly Recoveries Details
 				SET @Recov_Id=(SELECT Recov_Id FROM [dbo].[TDS_t_EmpYearlyGRecov_Details] Where Yealy_Id=@Yealy_Id)
 				IF(@Recov_Id IS NULL OR @Recov_Id<=0)
 				BEGIN
@@ -899,7 +930,7 @@ BEGIN
 					SET @Recov_Id=@@IDENTITY;
 				END
 
-				--[2.4]. Inserting Yearly GNon-Recoveries Details
+				--[4.4]. Inserting Yearly GNon-Recoveries Details
 				SET @NonRec_Id=(SELECT NonRec_Id FROM [dbo].[TDS_t_EmpYearlyGNonRecov_Details] Where Yealy_Id=@Yealy_Id)
 				IF(@NonRec_Id IS NULL OR @NonRec_Id<=0)
 				BEGIN

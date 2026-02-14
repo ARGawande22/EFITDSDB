@@ -36,9 +36,11 @@ BEGIN
 		BEGIN
 			IF(@@FETCH_STATUS<>-2)
 			BEGIN
-				SELECT @Transfer_Id=Transfer_Id --,@ValidFrom=ValidFrom,@ValidTo=ValidTo,@Transfer_Date=Transfer_Date
-				FROM [dbo].[TDS_t_EmpTransfer_History]
-				WHERE Sevaarth_Id=@Sevaarth_Id AND CurDDO_Code=@DDO_Code
+				--SELECT @Transfer_Id=Transfer_Id --,@ValidFrom=ValidFrom,@ValidTo=ValidTo,@Transfer_Date=Transfer_Date
+				--FROM [dbo].[TDS_t_EmpTransfer_History]
+				--WHERE Sevaarth_Id=@Sevaarth_Id AND CurDDO_Code=@DDO_Code
+
+				SET @Transfer_Id=(SELECT dbo.fn_GetTransferId(@Sevaarth_Id, @MinDate,@DDO_Code));    
 
 				IF(@Transfer_Id IS NULL OR @Transfer_Id <=0)
 				BEGIN

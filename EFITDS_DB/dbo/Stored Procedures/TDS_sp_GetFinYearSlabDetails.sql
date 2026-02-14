@@ -1,4 +1,6 @@
-﻿
+﻿Use TDSLive
+Go
+
 Create   Procedure [dbo].[TDS_sp_GetFinYearSlabDetails]
 	@Slab_Id int
 
@@ -27,7 +29,7 @@ BEGIN
 	  SELECT @Status=[Status]
 	  FROM  [dbo].[TDS_t_YearSlabDetails]
 	  Where [Slab_Id]=@Slab_Id
-	  and Status='Y'
+	  --and Status='Y'
 
 		IF(@@ROWCOUNT=0)
 		BEGIN
@@ -39,12 +41,14 @@ BEGIN
 	--Get Financial Year slab Information	
 	    Select
 			ys.Slab_Id,
+			ysd.Slab_DetailId,
 			ysd.Slab_Description,
 			ysd.[Value],
 			ysd.[Status]
 		FROM [dbo].[TDS_t_YearSlab] ys
 			JOIN [dbo].[TDS_t_YearSlabDetails] ysd ON ys.Slab_Id=ysd.Slab_Id
-		WHERE ysd.Status='Y' and ys.Slab_Id=@Slab_Id
+		WHERE --ysd.Status='Y' and 
+		ys.Slab_Id=@Slab_Id
 		ORDER BY ysd.Slab_Description
 
 	RETURN(0)

@@ -507,25 +507,7 @@ BEGIN
 --[1].  Update Employee transfer History
 	DECLARE @EmpCurDDOCode NVARCHAR(10)
 	SELECT @EmpCurDDOCode=DDO_Code FROM [dbo].[TDS_t_Emp_Details] Where Sevaarth_Id=@Sevaarth_Id
-	--IF @EmpCurDDOCode<>@CurDDOCode
-	--	BEGIN
-	--		UPDATE e
-	--		SET e.DDO_Code=@CurDDOCode
-	--			,e.Name_AsPerSevaarth= CASE WHEN e.Name_AsPerSevaarth=@Name_AsPerSevaarth THEN e.Name_AsPerSevaarth ELSE @Name_AsPerSevaarth END
-	--			,e.Gender_Id= CASE WHEN e.Gender_Id IS NULL THEN @Gender_Id ELSE e.Gender_Id END
-	--			,e.DBO_AsPerSevaarth=CASE WHEN e.DBO_AsPerSevaarth IS NULL THEN @DBO_AsPerSevaarth ELSE e.DBO_AsPerSevaarth END
-	--		FROM [dbo].[TDS_t_Emp_Details] AS e
-	--		WHERE e.Sevaarth_Id=@Sevaarth_Id
-	--	END
-	--ELSE
-	--	BEGIN
-	--		UPDATE e
-	--		SET e.Name_AsPerSevaarth= CASE WHEN e.Name_AsPerSevaarth=@Name_AsPerSevaarth THEN e.Name_AsPerSevaarth ELSE @Name_AsPerSevaarth END
-	--			,e.Gender_Id= CASE WHEN e.Gender_Id IS NULL THEN @Gender_Id ELSE e.Gender_Id END
-	--			,e.DBO_AsPerSevaarth=CASE WHEN e.DBO_AsPerSevaarth IS NULL THEN @DBO_AsPerSevaarth ELSE e.DBO_AsPerSevaarth END
-	--		FROM [dbo].[TDS_t_Emp_Details] AS e
-	--		WHERE e.Sevaarth_Id=@Sevaarth_Id
-	--	END
+	
 	UPDATE e
 	SET e.DDO_Code=CASE WHEN @EmpCurDDOCode<>@CurDDOCode THEN @CurDDOCode ELSE e.DDO_Code END
 		,e.Name_AsPerSevaarth= CASE WHEN e.Name_AsPerSevaarth=@Name_AsPerSevaarth THEN e.Name_AsPerSevaarth ELSE @Name_AsPerSevaarth END
@@ -549,7 +531,7 @@ BEGIN
 	ELSE IF @TansferCurDDOCode <> @CurDDOCode
 	BEGIN
 		UPDATE et
-		SET	et.ValidTo=@CurDDOJoiningDate
+		SET	et.ValidTo=DATEADD(DAY, -1, @CurDDOJoiningDate)
 			,et.Transfer_Date=@CurDDOJoiningDate
 			,et.[Status]='Y'
 		FROM [dbo].[TDS_t_EmpTransfer_History] et 

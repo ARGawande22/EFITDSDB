@@ -1,4 +1,6 @@
-﻿
+﻿Use TDSLive
+Go
+
 Create   Procedure [dbo].[TDS_sp_GetFinYears]
 	@Year_Id int=0
 
@@ -43,9 +45,11 @@ BEGIN
 			y.Lock_Date,
 			y.RPUPath,
 			y.RPUName,
-			y.RPUWinName
+			y.RPUWinName,
+			y.[Status]
 		FROM [dbo].[TDS_t_Year] y with(nolock)
-		WHERE y.Status='Y' and y.Year_Id=@Year_Id
+		WHERE y.Status='Y' and 
+		y.Year_Id=@Year_Id
 		ORDER BY y.Fin_Year DESC
 	  END
 	ELSE
@@ -57,9 +61,10 @@ BEGIN
 			y.Lock_Date,
 			y.RPUPath,
 			y.RPUName,
-			y.RPUWinName			
+			y.RPUWinName,
+			y.[Status]			
 		FROM [dbo].[TDS_t_Year] y with(nolock)
-			WHERE y.Status='Y'
+			--WHERE y.Status='Y'
 		ORDER BY y.Fin_Year DESC
 	  END
 

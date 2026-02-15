@@ -1,5 +1,5 @@
 ﻿
-Create   Procedure [dbo].[TDS_sp_GetRolerTypes]
+Create   Procedure [dbo].[TDS_sp_GetRoleTypes]
 --***********************************************************
 --***
 --*** Created On 23 Dec 2024 By A.R.Gawande

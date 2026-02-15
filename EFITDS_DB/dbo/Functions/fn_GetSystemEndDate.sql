@@ -1,0 +1,9 @@
+USE TDSLive;
+GO
+
+CREATE FUNCTION [dbo].[fn_GetSystemEndDate]()
+RETURNS DATETIME
+AS
+BEGIN
+    RETURN '31 Dec 2099';
+END;

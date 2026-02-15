@@ -1,14 +1,20 @@
-﻿Use TDSLive
+﻿USE TDSLive
 GO
 
-Create   Procedure [dbo].[TDS_sp_insSevaarthData]
-	@loginId INT
-	,@VDate	 DATETIME=Null      --Just for Managing Emp Transfer History
-	,@Sevaarthxml TEXT	
+Create   Procedure [dbo].[TDS_sp_ins_updLPCData]
+	@Sevaarth_Id NVARCHAR(15)
+	,@Name_AsPerSevaarth		NVARCHAR(50)
+	,@DBO_AsPerSevaarth		DATETIME	
+	,@Gender	 NVARCHAR(15)	
+	,@PreDDOCode NVARCHAR(10)
+	,@CurDDOCode NVARCHAR(10)
+	,@CurDDOJoiningDate DATETIME
+	,@loginId INT
+	,@lpcxml TEXT
 	,@Status INT  OUTPUT
 --***********************************************************
 --***
---*** Created On 22 June 2025 By A.R.Gawande
+--*** Created On 15 Jan 2026 By A.R.Gawande
 --***
 --***********************************************************
 AS
@@ -23,20 +29,15 @@ BEGIN
 			@XMLPrepared	INT,
 			@ErrMsg		NVARCHAR(255),			
 			@rc			SMALLINT,
-			@Exists		INT
-			--@Sevaarth_Id nvarchar(15),
-			
+			@Exists		INT,
+			@SystemEndDate DATETIME			
 			
 
 	SET @GetDate=GETDATE();
-
-	IF @VDate IS NULL
-	BEGIN
-		SET @VDate=@GetDate
-	END
+	SET @SystemEndDate=(Select [dbo].[fn_GetSystemEndDate]());
 
 	--open & prepare the XML document for reading into temporary tables.
-	EXEC @XMLPrepared=sp_XML_preparedocument @XMLDocumentHandle OUTPUT,@Sevaarthxml
+	EXEC @XMLPrepared=sp_XML_preparedocument @XMLDocumentHandle OUTPUT,@lpcxml
 
 	IF(@@ERROR <> 0)
 	BEGIN
@@ -44,10 +45,10 @@ BEGIN
 		GOTO spError
 	END
 
-	IF OBJECT_ID('tempdb..#SevaarthDetails') IS NOT NULL
-		DROP TABLE #SevaarthDetails
+	IF OBJECT_ID('tempdb..#LpcDetails') IS NOT NULL
+		DROP TABLE #LpcDetails
 
-	CREATE TABLE #SevaarthDetails(
+	CREATE TABLE #LpcDetails(
 			Sevaarth_Id			nvarchar(15) NOT NULL,
 			DDO_Code			nvarchar(11) NULL,
 			EMP_PANNo			nvarchar(10) NULL,
@@ -272,12 +273,12 @@ BEGIN
 		GOTO spError
 	END
 
-	INSERT INTO #SevaarthDetails(
+	INSERT INTO #LpcDetails(
 					Sevaarth_Id,
 					DDO_Code,					EMP_PANNo,					PAN_Status,					UID_No,					EID_No,					Name_AsPerSevaarth,					DBO_AsPerSevaarth,					Name_AsPerIT,					DBO_AsPerIT,					Designation_Id,					Designation,					DOJ,					DOR,					Contact_No,					Email_Id,					Gender_Id,					[Address],					IsManual,					IsSeniorCitizen,					IsDCPS,					Account_No,					Bank_Name,					IFSC_Code,					GPF_DCPS_AccountNo,					BankStatus,					Yealy_Id,					Voucher_Id,					Fin_Year,					Bill_Month,					Bill_Year,					PayBill_Type,					Vourcher_Date,					Voucher_No,					Net_Pay,					YeaylyStatus,					PayIn_PB_GP,					Basic_Pay,					Basic_Arrear,					Official_Pay,					Personal_Pay,					CLA_Pay,					Special_Pay,					Writer_Pay,					Leave_Salary,					DA,					DA_7PC,					Additional_DA,					Central_DA,					DA_Arrear,					DA_On_TA,					Dearness_Pay,					Additional_Pay,					HRA,					Additional_HRA,					HRA_Arrear,					HRA_Pay,					TA,					TA_Arrears,					TA_Pay,					Central_TA,					Leave_TA,					DCPS_Employer_Contribution,					ATC_Incentive_50,					ATC_Incentive_30,					Force_Incentive_100,					Force_Incentive_25,					Incentive_For_BDDS,					Arm_Allowance,					Armourer_Allowance,					BMI_Allowance,					CHPL_CPL_Allowance,					CID_Allowance,					Cash_Allowance,					Children_Educ_Allowance,					Convenyance_Allowance,					ESIS_Allowance,					Emergency_Allowance,					Extra_Lecture_Allowance,					Family_Planning_Allowance,					Fitness_Allowance,					Franking_Allowance,					Hilly_Allowance,					Kit_Maintenance_Allowance,					Mechanical_Allowance,					Med_St_Allowance,					Medical_Allowance_MA,					Medical_Education_Allowance,					Mess_Allowance,					Naxal_Area_Allowance,					Non_Practicing_Allowance,					Other_Allowances,					Other_Miscellaneous_Allowance,					Outfit_Allowance,					Peon_Allowance,					Permanent_Travelling_Allowance,					Post_Graduation_Allowance,					Project_Allowance,					Qualification_Allowance,					Refreshment_Allowance,					Special_Duty_Allowance,					Sumptuary_Allowance,					Technical_Allowance,					Tribal_Allowance,					Uniform_Allowance,					Washing_Allowance,					Flying_Allowance_For_Pilot,					Inspection_Allowance_For_Pilot,					Instructional_Allowance_For_Pilot,					Flying_Pay_For_Pilot_Cons,					Militery_Serv_Pay_Pilot,					RT_Allowance_For_Pilot,					Special_Pay_For_Pilot,					Gallantry_Awards,					IR_For_Judges,					License_Free,					UCTC,					Partially_Fully_Tax_Free,					Other,					Total_Gross,					Proffession_Tax,					Proffession_Tax_Arrears,					Income_Tax,					DCPS_Employee_Contribution,					DCPS_Pay_Arrear,					DCPS_Pay_Arrears_Recovery,					DCPS_Regular_Recovery,					DCPS_DA_Arrears_Recovery,					DCPS_Delayed_Recovery,					DedAdj_Employer_Contribution,					GIS,					Central_GIS,					GIS_IAS,					GIS_IFS,					GIS_IPS,					GIS_ZP,					GIS_Arrear,					GIS_Arrears_Recovery,					Contributory_PF,					GPF_IAS,					GPF_IAS_OtherState,					GPF_IFS,					GPF_IPS,					GPF_GRP_ABC,					GPF_ADV_GRP_ABC,					GPF_GRP_D,					GPF_ADV_GRP_D,					GPF_ABC_Arrears,					GPF_D_Arrears,					GPF_IAS_Arrears,					GPF_IFS_Arrears,					Group_Account_Policy,					House_Rent_Recovery,					HRR_Arrear,					MSLI,					PLI,					Service_Charge_and_Garage_Charge,					Service_Charge_Arr,					Co_Housing_Society,					Co_Housing_Society_Interest,					Computer_Advance,					Comp_Adv_Int,					Comp_AIS_Int,					Recovery_of_Overpayment,					FA,					HBA_Principal,					HBA_Interest,					HBA_AIS,					HBA_AIS_Int,					HBA_For_Land,					HBA_For_Land_Int,					HBA_House,					HBA_House_Int,					HIS,					MCA,					MCA_Interest,					MCA_AIS,					MCA_AIs_Int,					Other_Adv,					Other_Adv_Int,					Other_Vehical_Advance,					Other_Vehical_Advance_Interest,					Pay_Advance,					TA_Advance,					Other_GRecov,					Total_GRecoveries,					Bank_Loan_1,					Bank_Loan_2,					Co_Op_Bank_1,					Co_Op_Bank_2,					Co_Op_Cr_Soc_1,					Co_Op_Cr_Soc_2,					Co_Op_Hsg_Soc,					LIC_1,					LIC_2,					LIC_3,					Other_Recovery_1,					Other_Recovery_2,					RD_1,					RD_2,					Con_Store,					Matralaya_Bank,					Mess_Recovery,					Miscellaneous,					Elec_Charge,					Maintenance_Charge,					Tel_Charge,					Water_Charge,					Club_Fund,					Mess_Dev_Fund,					Welfare_Fund,					Other_GNonRecov,					Total_GNonRecoveries)
 		SELECT		Sevaarth_Id,
 					DDO_Code,					EMP_PANNo,					PAN_Status,					UID_No,					EID_No,					Name_AsPerSevaarth,					DBO_AsPerSevaarth=CASE WHEN DBO_AsPerSevaarth=CAST('0001-01-01' as date) THEN NULL ELSE DBO_AsPerSevaarth END,					Name_AsPerIT,					DBO_AsPerIT=CASE WHEN DBO_AsPerIT=CAST('0001-01-01' as date) THEN NULL ELSE DBO_AsPerIT END,					Designation_Id,					Designation,					DOJ=CASE WHEN DOJ=CAST('0001-01-01' as date) THEN NULL ELSE DOJ END,					DOR=CASE WHEN DOR=CAST('0001-01-01' as date) THEN NULL ELSE DOR END,					Contact_No,					Email_Id,					Gender_Id,					[Address],					IsManual,					IsSeniorCitizen,					IsDCPS,					Account_No,					Bank_Name,					IFSC_Code,					GPF_DCPS_AccountNo,					BankStatus,					Yealy_Id,					Voucher_Id,					Fin_Year,					Bill_Month,					Bill_Year,					PayBill_Type,					Vourcher_Date=CASE WHEN Vourcher_Date=CAST('0001-01-01' as date) THEN NULL ELSE Vourcher_Date END,					Voucher_No=CASE WHEN Voucher_No=0 THEN NULL ELSE Voucher_No END,					Net_Pay,					YeaylyStatus,					PayIn_PB_GP,					Basic_Pay,					Basic_Arrear,					Official_Pay,					Personal_Pay,					CLA_Pay,					Special_Pay,					Writer_Pay,					Leave_Salary,					DA,					DA_7PC,					Additional_DA,					Central_DA,					DA_Arrear,					DA_On_TA,					Dearness_Pay,					Additional_Pay,					HRA,					Additional_HRA,					HRA_Arrear,					HRA_Pay,					TA,					TA_Arrears,					TA_Pay,					Central_TA,					Leave_TA,					DCPS_Employer_Contribution,					ATC_Incentive_50,					ATC_Incentive_30,					Force_Incentive_100,					Force_Incentive_25,					Incentive_For_BDDS,					Arm_Allowance,					Armourer_Allowance,					BMI_Allowance,					CHPL_CPL_Allowance,					CID_Allowance,					Cash_Allowance,					Children_Educ_Allowance,					Convenyance_Allowance,					ESIS_Allowance,					Emergency_Allowance,					Extra_Lecture_Allowance,					Family_Planning_Allowance,					Fitness_Allowance,					Franking_Allowance,					Hilly_Allowance,					Kit_Maintenance_Allowance,					Mechanical_Allowance,					Med_St_Allowance,					Medical_Allowance_MA,					Medical_Education_Allowance,					Mess_Allowance,					Naxal_Area_Allowance,					Non_Practicing_Allowance,					Other_Allowances,					Other_Miscellaneous_Allowance,					Outfit_Allowance,					Peon_Allowance,					Permanent_Travelling_Allowance,					Post_Graduation_Allowance,					Project_Allowance,					Qualification_Allowance,					Refreshment_Allowance,					Special_Duty_Allowance,					Sumptuary_Allowance,					Technical_Allowance,					Tribal_Allowance,					Uniform_Allowance,					Washing_Allowance,					Flying_Allowance_For_Pilot,					Inspection_Allowance_For_Pilot,					Instructional_Allowance_For_Pilot,					Flying_Pay_For_Pilot_Cons,					Militery_Serv_Pay_Pilot,					RT_Allowance_For_Pilot,					Special_Pay_For_Pilot,					Gallantry_Awards,					IR_For_Judges,					License_Free,					UCTC,					Partially_Fully_Tax_Free,					Other,					Total_Gross,					Proffession_Tax,					Proffession_Tax_Arrears,					Income_Tax,					DCPS_Employee_Contribution,					DCPS_Pay_Arrear,					DCPS_Pay_Arrears_Recovery,					DCPS_Regular_Recovery,					DCPS_DA_Arrears_Recovery,					DCPS_Delayed_Recovery,					DedAdj_Employer_Contribution,					GIS,					Central_GIS,					GIS_IAS,					GIS_IFS,					GIS_IPS,					GIS_ZP,					GIS_Arrear,					GIS_Arrears_Recovery,					Contributory_PF,					GPF_IAS,					GPF_IAS_OtherState,					GPF_IFS,					GPF_IPS,					GPF_GRP_ABC,					GPF_ADV_GRP_ABC,					GPF_GRP_D,					GPF_ADV_GRP_D,					GPF_ABC_Arrears,					GPF_D_Arrears,					GPF_IAS_Arrears,					GPF_IFS_Arrears,					Group_Account_Policy,					House_Rent_Recovery,					HRR_Arrear,					MSLI,					PLI,					Service_Charge_and_Garage_Charge,					Service_Charge_Arr,					Co_Housing_Society,					Co_Housing_Society_Interest,					Computer_Advance,					Comp_Adv_Int,					Comp_AIS_Int,					Recovery_of_Overpayment,					FA,					HBA_Principal,					HBA_Interest,					HBA_AIS,					HBA_AIS_Int,					HBA_For_Land,					HBA_For_Land_Int,					HBA_House,					HBA_House_Int,					HIS,					MCA,					MCA_Interest,					MCA_AIS,					MCA_AIs_Int,					Other_Adv,					Other_Adv_Int,					Other_Vehical_Advance,					Other_Vehical_Advance_Interest,					Pay_Advance,					TA_Advance,					Other_GRecov,					Total_GRecoveries,					Bank_Loan_1,					Bank_Loan_2,					Co_Op_Bank_1,					Co_Op_Bank_2,					Co_Op_Cr_Soc_1,					Co_Op_Cr_Soc_2,					Co_Op_Hsg_Soc,					LIC_1,					LIC_2,					LIC_3,					Other_Recovery_1,					Other_Recovery_2,					RD_1,					RD_2,					Con_Store,					Matralaya_Bank,					Mess_Recovery,					Miscellaneous,					Elec_Charge,					Maintenance_Charge,					Tel_Charge,					Water_Charge,					Club_Fund,					Mess_Dev_Fund,					Welfare_Fund,					Other_GNonRecov,					Total_GNonRecoveries
-			FROM OPENXML(@XMLDocumentHandle ,'/Employees/SevaarthYearly', 2) WITH
+			FROM OPENXML(@XMLDocumentHandle ,'/LPCs/SevaarthYearly', 2) WITH
 						   (Sevaarth_Id			nvarchar(15),
 							DDO_Code			nvarchar(11),
 							EMP_PANNo			nvarchar(10),
@@ -494,231 +495,294 @@ BEGIN
 
     IF(@@ERROR <> 0)
 	 BEGIN
-	 	Select @ErrMsg='Error while loading office details from XML.'
+	 	Select @ErrMsg='Error while loading LPC details from XML.'
 	 	GOTO spError
 	 END	
-	 	
+	
+	DECLARE @Gender_Id INT
+			,@Transfer_Id INT
+			,@TansferCurDDOCode NVARCHAR(10)
+	SET @Gender_Id=(SELECT [dbo].[fn_GetGenderId](@Gender))
+
+--[1].  Update Employee transfer History
+	DECLARE @EmpCurDDOCode NVARCHAR(10)
+	SELECT @EmpCurDDOCode=DDO_Code FROM [dbo].[TDS_t_Emp_Details] Where Sevaarth_Id=@Sevaarth_Id
+	
+	UPDATE e
+	SET e.DDO_Code=CASE WHEN @EmpCurDDOCode<>@CurDDOCode THEN @CurDDOCode ELSE e.DDO_Code END
+		,e.Name_AsPerSevaarth= CASE WHEN e.Name_AsPerSevaarth=@Name_AsPerSevaarth THEN e.Name_AsPerSevaarth ELSE @Name_AsPerSevaarth END
+		,e.Gender_Id= CASE WHEN e.Gender_Id IS NULL THEN @Gender_Id ELSE e.Gender_Id END
+		,e.DBO_AsPerSevaarth=CASE WHEN e.DBO_AsPerSevaarth IS NULL THEN @DBO_AsPerSevaarth ELSE e.DBO_AsPerSevaarth END
+	FROM [dbo].[TDS_t_Emp_Details] AS e
+	WHERE e.Sevaarth_Id=@Sevaarth_Id
+
+
+	
+--[2]. Update/Add the Current DDO_Code Transfer Entry
+	SELECT @Transfer_Id=Transfer_Id ,@TansferCurDDOCode=CurDDO_Code
+	FROM [dbo].[TDS_t_EmpTransfer_History]
+	WHERE Sevaarth_Id=@Sevaarth_Id AND ValidTo=@SystemEndDate and [Status]='Y'
+
+	IF(@Transfer_Id IS NULL OR @Transfer_Id <=0)
+	BEGIN
+		INSERT INTO [dbo].[TDS_t_EmpTransfer_History](Sevaarth_Id,CurDDO_Code,ExtDDO_Code,ValidFrom,ValidTo,Transfer_Date,Status)
+		VALUES(@Sevaarth_Id,@CurDDOCode,NULL,@CurDDOJoiningDate,@SystemEndDate,NULL,'Y')
+	END
+	ELSE IF @TansferCurDDOCode <> @CurDDOCode
+	BEGIN
+		UPDATE et
+		SET	et.ValidTo=DATEADD(DAY, -1, @CurDDOJoiningDate)
+			,et.Transfer_Date=@CurDDOJoiningDate
+			,et.[Status]='Y'
+		FROM [dbo].[TDS_t_EmpTransfer_History] et 
+		WHERE Transfer_Id=@Transfer_Id
+
+		IF @@ROWCOUNT > 0
+		BEGIN
+			INSERT INTO [dbo].[TDS_t_EmpTransfer_History](Sevaarth_Id,CurDDO_Code,ExtDDO_Code,ValidFrom,ValidTo,Transfer_Date,Status)
+			VALUES(@Sevaarth_Id,@CurDDOCode,NULL,@CurDDOJoiningDate,@SystemEndDate,NULL,'Y')
+		END
+	END
+
+	--[3]. Manage the Emp Existing Transfer History
+		DECLARE @EmpTable [dbo].[EmpTransfer];
+
+		INSERT INTO @EmpTable(Sevaarth_Id,DDO_Code,MinDate,MaxDate)
+		SELECT Sevaarth_Id,DDO_Code,MIN(Vourcher_Date)as StartDae,Max(Vourcher_Date) as EndDate
+		FROM #LpcDetails
+		WHERE DDO_Code<>@CurDDOCode
+		GROUP BY Sevaarth_Id,DDO_Code
+
+		IF(Select COUNT(*) from @EmpTable)>0
+		BEGIN
+			EXEC [dbo].[TDS_sp_ins_updEmpTransferHistory] @EmpHistory=@EmpTable,@Status=@rc OUTPUT
+
+			IF(@rc = 0)
+			BEGIN
+				Select @ErrMsg='Error Updating Emp existing transfer History'
+				GOTO spError
+			END
+		END		
+
+
+--[4]. Insert Update LPC Bills
 	DECLARE	@Gross_Id	INT,
 			@Recov_Id	INT,
 			@NonRec_Id	INT
 
-    DECLARE @Sevaarth_Id			nvarchar(15),
-			@DDO_Code				nvarchar(11),
-			@EMP_PANNo				nvarchar(10),
-			@PAN_Status				nvarchar(1) ,
-			@UID_No					nvarchar(12),
-			@EID_No					nvarchar(50),
-			@Name_AsPerSevaarth		nvarchar(50),
-			@DBO_AsPerSevaarth		date		,
-			@Name_AsPerIT			nvarchar(50),
-			@DBO_AsPerIT			date		,
-			@Designation_Id			int			,
-			@Designation			nvarchar(500),
-			@DOJ					date		,
-			@DOR					date		,
-			@Contact_No				nvarchar(13),
-			@Email_Id				nvarchar(50),
-			@Gender_Id				int			,
-			@Address				nvarchar(255),
-			@IsManual				nvarchar(1) ,
-			@IsSeniorCitizen		nvarchar(1) ,
-			@IsDCPS					nvarchar(1) ,
-			@Account_No				nvarchar(50),
-			@Bank_Name				nvarchar(50),
-			@IFSC_Code				nvarchar(11),
-			@GPF_DCPS_AccountNo		nvarchar(50),
-			@BankStatus				nvarchar(1) ,
-			@Yealy_Id				int			,
-			@Voucher_Id				int			,
-			@Fin_Year				nvarchar(11),
-			@Bill_Month				nvarchar(10),
-			@Bill_Year				nvarchar(10),
-			@PayBill_Type			nvarchar(255),
-			@Vourcher_Date			date		,
-			@Voucher_No				int			,
-			@Net_Pay				decimal(18, 0),
-			@YeaylyStatus			nvarchar(1),
-			@PayIn_PB_GP			nvarchar(10),
-			@Basic_Pay				nvarchar(10),
-			@Basic_Arrear			nvarchar(10),
-			@Official_Pay			nvarchar(10),
-			@Personal_Pay			nvarchar(10),
-			@CLA_Pay				nvarchar(10),
-			@Special_Pay			nvarchar(10),
-			@Writer_Pay				nvarchar(10),
-			@Leave_Salary			nvarchar(10),
-			@DA						nvarchar(10),
-			@DA_7PC					nvarchar(10),
-			@Additional_DA			nvarchar(10),
-			@Central_DA				nvarchar(10),
-			@DA_Arrear				nvarchar(10),
-			@DA_On_TA				nvarchar(10),
-			@Dearness_Pay			nvarchar(10),
-			@Additional_Pay			nvarchar(10),
-			@HRA					nvarchar(10),
-			@Additional_HRA			nvarchar(10),
-			@HRA_Arrear				nvarchar(10),
-			@HRA_Pay				nvarchar(10),
-			@TA						nvarchar(10),
-			@TA_Arrears				nvarchar(10),
-			@TA_Pay					nvarchar(10),
-			@Central_TA				nvarchar(10),
-			@Leave_TA				nvarchar(10),
-			@DCPS_Employer_Contribution nvarchar(10),
-			@ATC_Incentive_50		nvarchar(10),
-			@ATC_Incentive_30		nvarchar(10),
-			@Force_Incentive_100	nvarchar(10),
-			@Force_Incentive_25		nvarchar(10),
-			@Incentive_For_BDDS		nvarchar(10),
-			@Arm_Allowance			nvarchar(10),
-			@Armourer_Allowance		nvarchar(10),
-			@BMI_Allowance			nvarchar(10),
-			@CHPL_CPL_Allowance		nvarchar(10),
-			@CID_Allowance			nvarchar(10),
-			@Cash_Allowance			nvarchar(10),
-			@Children_Educ_Allowance nvarchar(10),
-			@Convenyance_Allowance	nvarchar(10),
-			@ESIS_Allowance			nvarchar(10),
-			@Emergency_Allowance	nvarchar(10),
-			@Extra_Lecture_Allowance nvarchar(10),
-			@Family_Planning_Allowance nvarchar(10),
-			@Fitness_Allowance		nvarchar(10),
-			@Franking_Allowance		nvarchar(10),
-			@Hilly_Allowance		nvarchar(10),
-			@Kit_Maintenance_Allowance nvarchar(10),
-			@Mechanical_Allowance	nvarchar(10),
-			@Med_St_Allowance		nvarchar(10),
-			@Medical_Allowance_MA	nvarchar(10),
-			@Medical_Education_Allowance nvarchar(10),
-			@Mess_Allowance			nvarchar(10),
-			@Naxal_Area_Allowance nvarchar(10),
-			@Non_Practicing_Allowance nvarchar(10),
-			@Other_Allowances		nvarchar(10),
-			@Other_Miscellaneous_Allowance nvarchar(10),
-			@Outfit_Allowance		nvarchar(10),
-			@Peon_Allowance			nvarchar(10),
-			@Permanent_Travelling_Allowance nvarchar(10),
-			@Post_Graduation_Allowance nvarchar(10),
-			@Project_Allowance		nvarchar(10),
-			@Qualification_Allowance nvarchar(10),
-			@Refreshment_Allowance	nvarchar(10),
-			@Special_Duty_Allowance nvarchar(10),
-			@Sumptuary_Allowance	nvarchar(10),
-			@Technical_Allowance	nvarchar(10),
-			@Tribal_Allowance		nvarchar(10),
-			@Uniform_Allowance		nvarchar(10),
-			@Washing_Allowance		nvarchar(10),
-			@Flying_Allowance_For_Pilot nvarchar(10),
-			@Inspection_Allowance_For_Pilot nvarchar(10),
-			@Instructional_Allowance_For_Pilot nvarchar(10),
-			@Flying_Pay_For_Pilot_Cons nvarchar(10),
-			@Militery_Serv_Pay_Pilot nvarchar(10),
-			@RT_Allowance_For_Pilot nvarchar(10),
-			@Special_Pay_For_Pilot	nvarchar(10),
-			@Gallantry_Awards		nvarchar(10),
-			@IR_For_Judges			nvarchar(10),
-			@License_Free			nvarchar(10),
-			@UCTC					nvarchar(10),
-			@Partially_Fully_Tax_Free nvarchar(10),
-			@Other					nvarchar(10),
-			@Total_Gross			nvarchar(10),
-			@Proffession_Tax		nvarchar(10),
-			@Proffession_Tax_Arrears nvarchar(10),
-			@Income_Tax				nvarchar(10),
-			@DCPS_Employee_Contribution nvarchar(10),
-			@DCPS_Pay_Arrear		nvarchar(10),
-			@DCPS_Pay_Arrears_Recovery nvarchar(10),
-			@DCPS_Regular_Recovery	nvarchar(10),
-			@DCPS_DA_Arrears_Recovery nvarchar(10),
-			@DCPS_Delayed_Recovery	nvarchar(10),
-			@DedAdj_Employer_Contribution nvarchar(10),
-			@GIS					nvarchar(10),
-			@Central_GIS			nvarchar(10),
-			@GIS_IAS				nvarchar(10),
-			@GIS_IFS				nvarchar(10),
-			@GIS_IPS				nvarchar(10),
-			@GIS_ZP					nvarchar(10),
-			@GIS_Arrear				nvarchar(10),
-			@GIS_Arrears_Recovery	nvarchar(10),
-			@Contributory_PF		nvarchar(10),
-			@GPF_IAS				nvarchar(10),
-			@GPF_IAS_OtherState		nvarchar(10),
-			@GPF_IFS				nvarchar(10),
-			@GPF_IPS				nvarchar(10),
-			@GPF_GRP_ABC			nvarchar(10),
-			@GPF_ADV_GRP_ABC		nvarchar(10),
-			@GPF_GRP_D				nvarchar(10),
-			@GPF_ADV_GRP_D			nvarchar(10),
-			@GPF_ABC_Arrears		nvarchar(10),
-			@GPF_D_Arrears			nvarchar(10),
-			@GPF_IAS_Arrears		nvarchar(10),
-			@GPF_IFS_Arrears		nvarchar(10),
-			@Group_Account_Policy	nvarchar(10),
-			@House_Rent_Recovery	nvarchar(10),
-			@HRR_Arrear				nvarchar(10),
-			@MSLI					nvarchar(10),
-			@PLI					nvarchar(10),
-			@Service_Charge_and_Garage_Charge nvarchar(10),
-			@Service_Charge_Arr		nvarchar(10),
-			@Co_Housing_Society		nvarchar(10),
-			@Co_Housing_Society_Interest nvarchar(10),
-			@Computer_Advance		nvarchar(10),
-			@Comp_Adv_Int			nvarchar(10),
-			@Comp_AIS_Int			nvarchar(10),
-			@Recovery_of_Overpayment nvarchar(10),
-			@FA						nvarchar(10),
-			@HBA_Principal			nvarchar(10),
-			@HBA_Interest			nvarchar(10),
-			@HBA_AIS				nvarchar(10),
-			@HBA_AIS_Int			nvarchar(10),
-			@HBA_For_Land			nvarchar(10),
-			@HBA_For_Land_Int		nvarchar(10),
-			@HBA_House				nvarchar(10),
-			@HBA_House_Int			nvarchar(10),
-			@HIS					nvarchar(10),
-			@MCA					nvarchar(10),
-			@MCA_Interest			nvarchar(10),
-			@MCA_AIS				nvarchar(10),
-			@MCA_AIs_Int			nvarchar(10),
-			@Other_Adv				nvarchar(10),
-			@Other_Adv_Int			nvarchar(10),
-			@Other_Vehical_Advance	nvarchar(10),
-			@Other_Vehical_Advance_Interest nvarchar(10),
-			@Pay_Advance			nvarchar(10),
-			@TA_Advance				nvarchar(10),
-			@Other_GRecov			nvarchar(10),
-			@Total_GRecoveries		nvarchar(10),
-			@Bank_Loan_1			nvarchar(10),
-			@Bank_Loan_2			nvarchar(10),
-			@Co_Op_Bank_1			nvarchar(10),
-			@Co_Op_Bank_2			nvarchar(10),
-			@Co_Op_Cr_Soc_1			nvarchar(10),
-			@Co_Op_Cr_Soc_2			nvarchar(10),
-			@Co_Op_Hsg_Soc			nvarchar(10),
-			@LIC_1					nvarchar(10),
-			@LIC_2					nvarchar(10),
-			@LIC_3					nvarchar(10),
-			@Other_Recovery_1		nvarchar(10),
-			@Other_Recovery_2		nvarchar(10),
-			@RD_1					nvarchar(10),
-			@RD_2					nvarchar(10),
-			@Con_Store				nvarchar(10),
-			@Matralaya_Bank			nvarchar(10),
-			@Mess_Recovery			nvarchar(10),
-			@Miscellaneous			nvarchar(10),
-			@Elec_Charge			nvarchar(10),
-			@Maintenance_Charge		nvarchar(10),
-			@Tel_Charge				nvarchar(10),
-			@Water_Charge			nvarchar(10),
-			@Club_Fund				nvarchar(10),
-			@Mess_Dev_Fund			nvarchar(10),
-			@Welfare_Fund			nvarchar(10),
-			@Other_GNonRecov		nvarchar(10),
-			@Total_GNonRecoveries	nvarchar(10) 
+	DECLARE @DDO_Code					nvarchar(11),
+				@EMP_PANNo				nvarchar(10),
+				@PAN_Status				nvarchar(1) ,
+				@UID_No					nvarchar(12),
+				@EID_No					nvarchar(50),
+				@Name_AsPerIT			nvarchar(50),
+				@DBO_AsPerIT			date		,
+				@Designation_Id			int			,
+				@Designation			nvarchar(500),
+				@DOJ					date		,
+				@DOR					date		,
+				@Contact_No				nvarchar(13),
+				@Email_Id				nvarchar(50),
+				@Address				nvarchar(255),
+				@IsManual				nvarchar(1) ,
+				@IsSeniorCitizen		nvarchar(1) ,
+				@IsDCPS					nvarchar(1) ,
+				@Account_No				nvarchar(50),
+				@Bank_Name				nvarchar(50),
+				@IFSC_Code				nvarchar(11),
+				@GPF_DCPS_AccountNo		nvarchar(50),
+				@BankStatus				nvarchar(1) ,
+				@Yealy_Id				int			,
+				@Voucher_Id				int			,
+				@Fin_Year				nvarchar(11),
+				@Bill_Month				nvarchar(10),
+				@Bill_Year				nvarchar(10),
+				@PayBill_Type			nvarchar(255),
+				@Vourcher_Date			date		,
+				@Voucher_No				int			,
+				@Net_Pay				decimal(18, 0),
+				@YeaylyStatus			nvarchar(1),
+				@PayIn_PB_GP			nvarchar(10),
+				@Basic_Pay				nvarchar(10),
+				@Basic_Arrear			nvarchar(10),
+				@Official_Pay			nvarchar(10),
+				@Personal_Pay			nvarchar(10),
+				@CLA_Pay				nvarchar(10),
+				@Special_Pay			nvarchar(10),
+				@Writer_Pay				nvarchar(10),
+				@Leave_Salary			nvarchar(10),
+				@DA						nvarchar(10),
+				@DA_7PC					nvarchar(10),
+				@Additional_DA			nvarchar(10),
+				@Central_DA				nvarchar(10),
+				@DA_Arrear				nvarchar(10),
+				@DA_On_TA				nvarchar(10),
+				@Dearness_Pay			nvarchar(10),
+				@Additional_Pay			nvarchar(10),
+				@HRA					nvarchar(10),
+				@Additional_HRA			nvarchar(10),
+				@HRA_Arrear				nvarchar(10),
+				@HRA_Pay				nvarchar(10),
+				@TA						nvarchar(10),
+				@TA_Arrears				nvarchar(10),
+				@TA_Pay					nvarchar(10),
+				@Central_TA				nvarchar(10),
+				@Leave_TA				nvarchar(10),
+				@DCPS_Employer_Contribution nvarchar(10),
+				@ATC_Incentive_50		nvarchar(10),
+				@ATC_Incentive_30		nvarchar(10),
+				@Force_Incentive_100	nvarchar(10),
+				@Force_Incentive_25		nvarchar(10),
+				@Incentive_For_BDDS		nvarchar(10),
+				@Arm_Allowance			nvarchar(10),
+				@Armourer_Allowance		nvarchar(10),
+				@BMI_Allowance			nvarchar(10),
+				@CHPL_CPL_Allowance		nvarchar(10),
+				@CID_Allowance			nvarchar(10),
+				@Cash_Allowance			nvarchar(10),
+				@Children_Educ_Allowance nvarchar(10),
+				@Convenyance_Allowance	nvarchar(10),
+				@ESIS_Allowance			nvarchar(10),
+				@Emergency_Allowance	nvarchar(10),
+				@Extra_Lecture_Allowance nvarchar(10),
+				@Family_Planning_Allowance nvarchar(10),
+				@Fitness_Allowance		nvarchar(10),
+				@Franking_Allowance		nvarchar(10),
+				@Hilly_Allowance		nvarchar(10),
+				@Kit_Maintenance_Allowance nvarchar(10),
+				@Mechanical_Allowance	nvarchar(10),
+				@Med_St_Allowance		nvarchar(10),
+				@Medical_Allowance_MA	nvarchar(10),
+				@Medical_Education_Allowance nvarchar(10),
+				@Mess_Allowance			nvarchar(10),
+				@Naxal_Area_Allowance nvarchar(10),
+				@Non_Practicing_Allowance nvarchar(10),
+				@Other_Allowances		nvarchar(10),
+				@Other_Miscellaneous_Allowance nvarchar(10),
+				@Outfit_Allowance		nvarchar(10),
+				@Peon_Allowance			nvarchar(10),
+				@Permanent_Travelling_Allowance nvarchar(10),
+				@Post_Graduation_Allowance nvarchar(10),
+				@Project_Allowance		nvarchar(10),
+				@Qualification_Allowance nvarchar(10),
+				@Refreshment_Allowance	nvarchar(10),
+				@Special_Duty_Allowance nvarchar(10),
+				@Sumptuary_Allowance	nvarchar(10),
+				@Technical_Allowance	nvarchar(10),
+				@Tribal_Allowance		nvarchar(10),
+				@Uniform_Allowance		nvarchar(10),
+				@Washing_Allowance		nvarchar(10),
+				@Flying_Allowance_For_Pilot nvarchar(10),
+				@Inspection_Allowance_For_Pilot nvarchar(10),
+				@Instructional_Allowance_For_Pilot nvarchar(10),
+				@Flying_Pay_For_Pilot_Cons nvarchar(10),
+				@Militery_Serv_Pay_Pilot nvarchar(10),
+				@RT_Allowance_For_Pilot nvarchar(10),
+				@Special_Pay_For_Pilot	nvarchar(10),
+				@Gallantry_Awards		nvarchar(10),
+				@IR_For_Judges			nvarchar(10),
+				@License_Free			nvarchar(10),
+				@UCTC					nvarchar(10),
+				@Partially_Fully_Tax_Free nvarchar(10),
+				@Other					nvarchar(10),
+				@Total_Gross			nvarchar(10),
+				@Proffession_Tax		nvarchar(10),
+				@Proffession_Tax_Arrears nvarchar(10),
+				@Income_Tax				nvarchar(10),
+				@DCPS_Employee_Contribution nvarchar(10),
+				@DCPS_Pay_Arrear		nvarchar(10),
+				@DCPS_Pay_Arrears_Recovery nvarchar(10),
+				@DCPS_Regular_Recovery	nvarchar(10),
+				@DCPS_DA_Arrears_Recovery nvarchar(10),
+				@DCPS_Delayed_Recovery	nvarchar(10),
+				@DedAdj_Employer_Contribution nvarchar(10),
+				@GIS					nvarchar(10),
+				@Central_GIS			nvarchar(10),
+				@GIS_IAS				nvarchar(10),
+				@GIS_IFS				nvarchar(10),
+				@GIS_IPS				nvarchar(10),
+				@GIS_ZP					nvarchar(10),
+				@GIS_Arrear				nvarchar(10),
+				@GIS_Arrears_Recovery	nvarchar(10),
+				@Contributory_PF		nvarchar(10),
+				@GPF_IAS				nvarchar(10),
+				@GPF_IAS_OtherState		nvarchar(10),
+				@GPF_IFS				nvarchar(10),
+				@GPF_IPS				nvarchar(10),
+				@GPF_GRP_ABC			nvarchar(10),
+				@GPF_ADV_GRP_ABC		nvarchar(10),
+				@GPF_GRP_D				nvarchar(10),
+				@GPF_ADV_GRP_D			nvarchar(10),
+				@GPF_ABC_Arrears		nvarchar(10),
+				@GPF_D_Arrears			nvarchar(10),
+				@GPF_IAS_Arrears		nvarchar(10),
+				@GPF_IFS_Arrears		nvarchar(10),
+				@Group_Account_Policy	nvarchar(10),
+				@House_Rent_Recovery	nvarchar(10),
+				@HRR_Arrear				nvarchar(10),
+				@MSLI					nvarchar(10),
+				@PLI					nvarchar(10),
+				@Service_Charge_and_Garage_Charge nvarchar(10),
+				@Service_Charge_Arr		nvarchar(10),
+				@Co_Housing_Society		nvarchar(10),
+				@Co_Housing_Society_Interest nvarchar(10),
+				@Computer_Advance		nvarchar(10),
+				@Comp_Adv_Int			nvarchar(10),
+				@Comp_AIS_Int			nvarchar(10),
+				@Recovery_of_Overpayment nvarchar(10),
+				@FA						nvarchar(10),
+				@HBA_Principal			nvarchar(10),
+				@HBA_Interest			nvarchar(10),
+				@HBA_AIS				nvarchar(10),
+				@HBA_AIS_Int			nvarchar(10),
+				@HBA_For_Land			nvarchar(10),
+				@HBA_For_Land_Int		nvarchar(10),
+				@HBA_House				nvarchar(10),
+				@HBA_House_Int			nvarchar(10),
+				@HIS					nvarchar(10),
+				@MCA					nvarchar(10),
+				@MCA_Interest			nvarchar(10),
+				@MCA_AIS				nvarchar(10),
+				@MCA_AIs_Int			nvarchar(10),
+				@Other_Adv				nvarchar(10),
+				@Other_Adv_Int			nvarchar(10),
+				@Other_Vehical_Advance	nvarchar(10),
+				@Other_Vehical_Advance_Interest nvarchar(10),
+				@Pay_Advance			nvarchar(10),
+				@TA_Advance				nvarchar(10),
+				@Other_GRecov			nvarchar(10),
+				@Total_GRecoveries		nvarchar(10),
+				@Bank_Loan_1			nvarchar(10),
+				@Bank_Loan_2			nvarchar(10),
+				@Co_Op_Bank_1			nvarchar(10),
+				@Co_Op_Bank_2			nvarchar(10),
+				@Co_Op_Cr_Soc_1			nvarchar(10),
+				@Co_Op_Cr_Soc_2			nvarchar(10),
+				@Co_Op_Hsg_Soc			nvarchar(10),
+				@LIC_1					nvarchar(10),
+				@LIC_2					nvarchar(10),
+				@LIC_3					nvarchar(10),
+				@Other_Recovery_1		nvarchar(10),
+				@Other_Recovery_2		nvarchar(10),
+				@RD_1					nvarchar(10),
+				@RD_2					nvarchar(10),
+				@Con_Store				nvarchar(10),
+				@Matralaya_Bank			nvarchar(10),
+				@Mess_Recovery			nvarchar(10),
+				@Miscellaneous			nvarchar(10),
+				@Elec_Charge			nvarchar(10),
+				@Maintenance_Charge		nvarchar(10),
+				@Tel_Charge				nvarchar(10),
+				@Water_Charge			nvarchar(10),
+				@Club_Fund				nvarchar(10),
+				@Mess_Dev_Fund			nvarchar(10),
+				@Welfare_Fund			nvarchar(10),
+				@Other_GNonRecov		nvarchar(10),
+				@Total_GNonRecoveries	nvarchar(10) 
 
 	DECLARE K CURSOR LOCAL READ_ONLY FOR
-	SELECT Sevaarth_Id,DDO_Code,EMP_PANNo,PAN_Status,UID_No,EID_No,Name_AsPerSevaarth,DBO_AsPerSevaarth,Name_AsPerIT,DBO_AsPerIT,Designation_Id,Designation,
-	DOJ,DOR,Contact_No,Email_Id,Gender_Id,Address,IsManual,IsSeniorCitizen,IsDCPS,Account_No,Bank_Name,IFSC_Code,GPF_DCPS_AccountNo,BankStatus,Yealy_Id,
+	SELECT DDO_Code,EMP_PANNo,PAN_Status,UID_No,EID_No,Name_AsPerIT,DBO_AsPerIT,Designation_Id,Designation,
+	DOJ,DOR,Contact_No,Email_Id,Address,IsManual,IsSeniorCitizen,IsDCPS,Account_No,Bank_Name,IFSC_Code,GPF_DCPS_AccountNo,BankStatus,Yealy_Id,
 	Voucher_Id,Fin_Year,Bill_Month,Bill_Year,PayBill_Type,Vourcher_Date,Voucher_No,Net_Pay,YeaylyStatus,PayIn_PB_GP,Basic_Pay,Basic_Arrear,Official_Pay,
 	Personal_Pay,CLA_Pay,Special_Pay,Writer_Pay,Leave_Salary,DA	,DA_7PC,Additional_DA,Central_DA,DA_Arrear,DA_On_TA,Dearness_Pay,Additional_Pay,HRA,
 	Additional_HRA,HRA_Arrear,HRA_Pay,TA,TA_Arrears,TA_Pay,Central_TA,Leave_TA,DCPS_Employer_Contribution,ATC_Incentive_50,ATC_Incentive_30,
@@ -739,10 +803,10 @@ BEGIN
 	Other_Vehical_Advance,Other_Vehical_Advance_Interest,Pay_Advance,TA_Advance,Other_GRecov,Total_GRecoveries,Bank_Loan_1,Bank_Loan_2,Co_Op_Bank_1,
 	Co_Op_Bank_2,Co_Op_Cr_Soc_1,Co_Op_Cr_Soc_2,Co_Op_Hsg_Soc,LIC_1,LIC_2,LIC_3,Other_Recovery_1,Other_Recovery_2,RD_1,RD_2,Con_Store,Matralaya_Bank,
 	Mess_Recovery,Miscellaneous,Elec_Charge,Maintenance_Charge,Tel_Charge,Water_Charge,Club_Fund,Mess_Dev_Fund,Welfare_Fund,Other_GNonRecov,
-	Total_GNonRecoveries FROM #SevaarthDetails 
+	Total_GNonRecoveries FROM #LpcDetails 
 	OPEN K
-		FETCH NEXT FROM K INTO @Sevaarth_Id,@DDO_Code,@EMP_PANNo,@PAN_Status,@UID_No,@EID_No,@Name_AsPerSevaarth,@DBO_AsPerSevaarth,@Name_AsPerIT,
-		@DBO_AsPerIT,@Designation_Id,@Designation,@DOJ,@DOR,@Contact_No,@Email_Id,@Gender_Id,@Address,@IsManual,@IsSeniorCitizen,@IsDCPS,@Account_No,
+		FETCH NEXT FROM K INTO @DDO_Code,@EMP_PANNo,@PAN_Status,@UID_No,@EID_No,@Name_AsPerIT,
+		@DBO_AsPerIT,@Designation_Id,@Designation,@DOJ,@DOR,@Contact_No,@Email_Id,@Address,@IsManual,@IsSeniorCitizen,@IsDCPS,@Account_No,
 		@Bank_Name,@IFSC_Code,@GPF_DCPS_AccountNo,@BankStatus,@Yealy_Id,@Voucher_Id,@Fin_Year,@Bill_Month,@Bill_Year,@PayBill_Type,@Vourcher_Date,
 		@Voucher_No,@Net_Pay,@YeaylyStatus,@PayIn_PB_GP,@Basic_Pay,@Basic_Arrear,@Official_Pay,@Personal_Pay,@CLA_Pay,@Special_Pay,@Writer_Pay,
 		@Leave_Salary,@DA	,@DA_7PC,@Additional_DA,@Central_DA,@DA_Arrear,@DA_On_TA,@Dearness_Pay,@Additional_Pay,@HRA,@Additional_HRA,@HRA_Arrear,
@@ -769,105 +833,9 @@ BEGIN
 		BEGIN
 			IF(@@FETCH_STATUS<>-2)
 			BEGIN
-				--[1]. Insert Desinatin if not Exist
-				SELECT @Designation_Id=Designation_Id FROM [dbo].[TDS_t_Designations] WHERE Designation=@Designation and [Status]='Y'
-				IF(@Designation_Id=0 OR @Designation_Id IS NULL)
-				BEGIN
-					INSERT INTO [dbo].[TDS_t_Designations](Designation,[Status]) VALUES(@Designation,'Y')
-					SET @Designation_Id=@@IDENTITY;
-				END
-
-				--[2]. Insert Employee if Not exist.
-				IF NOT EXISTS (SELECT * FROM [dbo].[TDS_t_Emp_Details] WHERE Sevaarth_Id=@Sevaarth_Id)
-				BEGIN
-				  INSERT INTO [dbo].[TDS_t_Emp_Details](
-											Sevaarth_Id,
-											DDO_Code,
-											EMP_PANNo,
-											PAN_Status,
-											UID_No,
-											EID_No,
-											Name_AsPerSevaarth,
-											DBO_AsPerSevaarth,
-											Name_AsPerIT,
-											DBO_AsPerIT,
-											Designation_Id,											
-											DOJ,
-											DOR,
-											Contact_No,
-											Email_Id,
-											Gender_Id,
-											[Address],
-											IsManual,
-											IsSeniorCitizen,
-											IsDCPS,
-											InsertedBy,
-											InsertedOn,
-											[Status])
-									VALUES (@Sevaarth_Id,
-											@DDO_Code,
-											@EMP_PANNo,
-											@PAN_Status,
-											@UID_No,
-											@EID_No,
-											@Name_AsPerSevaarth,
-											@DBO_AsPerSevaarth,
-											@Name_AsPerIT,
-											@DBO_AsPerIT,
-											@Designation_Id,
-											@DOJ,
-											@DOR,
-											@Contact_No,
-											@Email_Id,
-											@Gender_Id,
-											@Address,
-											@IsManual,
-											@IsSeniorCitizen,
-											@IsDCPS,
-											@loginId,
-											@GetDate,
-											'Y')
-				  
-				  IF(@@ERROR <> 0)
-				  BEGIN
-				 	Select @ErrMsg='Error inserting employee details.'
-				 	GOTO spError
-				 END				 
-
-				 IF NOT EXISTS (SELECT * FROM [dbo].[TDS_t_EmpBank_Details] WHERE Sevaarth_Id=@Sevaarth_Id)
-				 BEGIN
-					INSERT INTO [dbo].[TDS_t_EmpBank_Details](Sevaarth_Id,Account_No,Bank_Name,IFSC_Code,GPF_DCPS_AccountNo,[Status])
-														VALUES(@Sevaarth_Id,@Account_No,@Bank_Name,@IFSC_Code,@GPF_DCPS_AccountNo,'Y')
-				 END
-				 ELSE
-				 BEGIN
-					UPDATE [dbo].[TDS_t_EmpBank_Details] SET Account_No=@Account_No,Bank_Name=@Bank_Name,IFSC_Code=@IFSC_Code,
-							GPF_DCPS_AccountNo=@GPF_DCPS_AccountNo,[Status]='Y' WHERE Sevaarth_Id=@Sevaarth_Id
-				 END
-				END
-				ELSE
-				 BEGIN
-					UPDATE [dbo].[TDS_t_Emp_Details] 
-					SET EMP_PANNo=@EMP_PANNo,
-						PAN_Status=CASE WHEN EMP_PANNo<>@EMP_PANNo THEN 'N' ELSE PAN_Status END,
-						UID_No=@UID_No,
-						EID_No=@EID_No,
-						Name_AsPerSevaarth=@Name_AsPerSevaarth,
-						DBO_AsPerSevaarth=@DBO_AsPerSevaarth
-					WHERE Sevaarth_Id=@Sevaarth_Id
-				 END
-
-				---[2.1]. Manage the Emp Existing Transfer History
-				EXEC [dbo].[TDS_sp_ins_updEmpTransferHistoryBySevaarthId] @DDO_Code=@DDO_Code,@Sevaarth_Id=@Sevaarth_Id,@VDate=@VDate,@Result=@rc OUTPUT
-
-
-				--[3]. Insert Employee Yearly Details.
+				--[4.1]. Emp voucher already present or Not
 				SET @Yealy_Id =(SELECT Yealy_Id FROM [dbo].[TDS_t_EmpYearly_Details] where Sevaarth_Id=@Sevaarth_Id AND Voucher_Id=@Voucher_Id AND DDO_Code=@DDO_Code)
-				IF(@Yealy_Id<>0)
-				BEGIN
-					UPDATE [dbo].[TDS_t_EmpYearly_Details] SET Net_Pay=@Net_Pay where Yealy_Id=@Yealy_Id
-				END
-				ELSE
+				IF(@Yealy_Id IS NULL OR @Yealy_Id<=0)
 				BEGIN
 					INSERT INTO [dbo].[TDS_t_EmpYearly_Details](Sevaarth_Id,DDO_Code,Voucher_Id,Net_Pay,[Status])
 								VALUES(@Sevaarth_Id,@DDO_Code,@Voucher_Id,@Net_Pay,@YeaylyStatus)
@@ -881,34 +849,9 @@ BEGIN
 					SET @Yealy_Id=@@IDENTITY;
 				END
 
-				--[4]. Insert Employee Gross Details.
+				--[4.2]. Inserting Yearly Gross Details
 				SET @Gross_Id=(SELECT Gross_Id FROM [dbo].[TDS_t_EmpYearlyGross_Details] Where Yealy_Id=@Yealy_Id)
-				IF(@Gross_Id<>0)
-				BEGIN
-					UPDATE [dbo].[TDS_t_EmpYearlyGross_Details] SET PayIn_PB_GP=@PayIn_PB_GP,Basic_Pay=@Basic_Pay,Basic_Arrear=@Basic_Arrear,Official_Pay=@Official_Pay,
-							Personal_Pay=@Personal_Pay,CLA_Pay=@CLA_Pay,Special_Pay=@Special_Pay,Writer_Pay=@Writer_Pay,Leave_Salary=@Leave_Salary,DA=@DA,DA_7PC=@DA_7PC,
-							Additional_DA=@Additional_DA,Central_DA=@Central_DA,DA_Arrear=@DA_Arrear,DA_On_TA=@DA_On_TA,Dearness_Pay=@Dearness_Pay,Additional_Pay=@Additional_Pay,
-							HRA=@HRA,Additional_HRA=@Additional_HRA,HRA_Arrear=@HRA_Arrear,HRA_Pay=@HRA_Pay,TA=@TA,TA_Arrears=@TA_Arrears,TA_Pay=@TA_Pay,Central_TA=@Central_TA,
-							Leave_TA=@Leave_TA,DCPS_Employer_Contribution=@DCPS_Employer_Contribution,ATC_Incentive_50=@ATC_Incentive_50,ATC_Incentive_30=@ATC_Incentive_30,
-							Force_Incentive_100=@Force_Incentive_100,Force_Incentive_25=@Force_Incentive_25,Incentive_For_BDDS=@Incentive_For_BDDS,Arm_Allowance=@Arm_Allowance,
-							Armourer_Allowance=@Armourer_Allowance,BMI_Allowance=@BMI_Allowance,CHPL_CPL_Allowance=@CHPL_CPL_Allowance,CID_Allowance=@CID_Allowance,
-							Cash_Allowance=@Cash_Allowance,Children_Educ_Allowance=@Children_Educ_Allowance,Convenyance_Allowance=@Convenyance_Allowance,ESIS_Allowance=@ESIS_Allowance,
-							Emergency_Allowance=@Emergency_Allowance,Extra_Lecture_Allowance=@Extra_Lecture_Allowance,Family_Planning_Allowance=@Family_Planning_Allowance,
-							Fitness_Allowance=@Fitness_Allowance,Franking_Allowance=@Franking_Allowance,Hilly_Allowance=@Hilly_Allowance,Kit_Maintenance_Allowance=@Kit_Maintenance_Allowance,
-							Mechanical_Allowance=@Mechanical_Allowance,Med_St_Allowance=@Med_St_Allowance,Medical_Allowance_MA=@Medical_Allowance_MA,
-							Medical_Education_Allowance=@Medical_Education_Allowance,Mess_Allowance=@Mess_Allowance,Naxal_Area_Allowance=@Naxal_Area_Allowance,
-							Non_Practicing_Allowance=@Non_Practicing_Allowance,Other_Allowances=@Other_Allowances,Other_Miscellaneous_Allowance=@Other_Miscellaneous_Allowance,
-							Outfit_Allowance=@Outfit_Allowance,Peon_Allowance=@Peon_Allowance,Permanent_Travelling_Allowance=@Permanent_Travelling_Allowance,
-							Post_Graduation_Allowance=@Post_Graduation_Allowance,Project_Allowance=@Project_Allowance,Qualification_Allowance=@Qualification_Allowance,
-							Refreshment_Allowance=@Refreshment_Allowance,Special_Duty_Allowance=@Special_Duty_Allowance,Sumptuary_Allowance=@Sumptuary_Allowance,
-							Technical_Allowance=@Technical_Allowance,Tribal_Allowance=@Tribal_Allowance,Uniform_Allowance=@Uniform_Allowance,Washing_Allowance=@Washing_Allowance,
-							Flying_Allowance_For_Pilot=@Flying_Allowance_For_Pilot,Inspection_Allowance_For_Pilot=@Inspection_Allowance_For_Pilot,
-							Instructional_Allowance_For_Pilot=@Instructional_Allowance_For_Pilot,Flying_Pay_For_Pilot_Cons=@Flying_Pay_For_Pilot_Cons,Militery_Serv_Pay_Pilot=@Militery_Serv_Pay_Pilot,
-							RT_Allowance_For_Pilot=@RT_Allowance_For_Pilot,Special_Pay_For_Pilot=@Special_Pay_For_Pilot,Gallantry_Awards=@Gallantry_Awards,IR_For_Judges=@IR_For_Judges,
-							License_Free=@License_Free,UCTC=@UCTC,Partially_Fully_Tax_Free=@Partially_Fully_Tax_Free,Other=@Other,Total_Gross=@Total_Gross
-					WHERE Yealy_Id=@Yealy_Id AND Gross_Id=@Gross_Id
-				END
-				ELSE
+				IF(@Gross_Id IS NULL OR @Gross_Id<=0)
 				BEGIN
 					INSERT INTO [dbo].[TDS_t_EmpYearlyGross_Details](Yealy_Id,PayIn_PB_GP,Basic_Pay,Basic_Arrear,Official_Pay,
 							Personal_Pay,CLA_Pay,Special_Pay,Writer_Pay,Leave_Salary,DA	,DA_7PC,Additional_DA,Central_DA,DA_Arrear,DA_On_TA,Dearness_Pay,Additional_Pay,HRA,
@@ -931,8 +874,8 @@ BEGIN
 							@Refreshment_Allowance,@Special_Duty_Allowance,@Sumptuary_Allowance,@Technical_Allowance,@Tribal_Allowance,@Uniform_Allowance,@Washing_Allowance,
 							@Flying_Allowance_For_Pilot,@Inspection_Allowance_For_Pilot,@Instructional_Allowance_For_Pilot,@Flying_Pay_For_Pilot_Cons,@Militery_Serv_Pay_Pilot,
 							@RT_Allowance_For_Pilot,@Special_Pay_For_Pilot,@Gallantry_Awards,@IR_For_Judges,@License_Free,@UCTC,@Partially_Fully_Tax_Free,@Other,@Total_Gross)
-
-					IF(@@ERROR <> 0)
+				
+				    IF(@@ERROR <> 0)
 					 BEGIN
 						Select @ErrMsg='Error inserting employee Gross details.'
 						GOTO spError
@@ -941,28 +884,9 @@ BEGIN
 					SET @Gross_Id=@@IDENTITY;
 				END
 
-				--[5]. Insert Employee Gov Recoveries details
+				--[4.3]. Inserting Yearly Recoveries Details
 				SET @Recov_Id=(SELECT Recov_Id FROM [dbo].[TDS_t_EmpYearlyGRecov_Details] Where Yealy_Id=@Yealy_Id)
-				IF(@Recov_Id<>0)
-				BEGIN
-					UPDATE [dbo].[TDS_t_EmpYearlyGRecov_Details] SET Proffession_Tax=@Proffession_Tax,Proffession_Tax_Arrears=@Proffession_Tax_Arrears,
-					Income_Tax=@Income_Tax,DCPS_Employee_Contribution=@DCPS_Employee_Contribution,DCPS_Pay_Arrear=@DCPS_Pay_Arrear,
-					DCPS_Pay_Arrears_Recovery=@DCPS_Pay_Arrears_Recovery,DCPS_Regular_Recovery=@DCPS_Regular_Recovery,
-					DCPS_DA_Arrears_Recovery=@DCPS_DA_Arrears_Recovery,DCPS_Delayed_Recovery=@DCPS_Delayed_Recovery,DedAdj_Employer_Contribution=@DedAdj_Employer_Contribution,
-					GIS=@GIS,Central_GIS=@Central_GIS,GIS_IAS=@GIS_IAS,GIS_IFS=@GIS_IFS,GIS_IPS=@GIS_IPS,GIS_ZP=@GIS_ZP,GIS_Arrear=@GIS_Arrear,
-					GIS_Arrears_Recovery=@GIS_Arrears_Recovery,Contributory_PF=@Contributory_PF,GPF_IAS=@GPF_IAS,GPF_IAS_OtherState=@GPF_IAS_OtherState,GPF_IFS=@GPF_IFS,
-					GPF_IPS=@GPF_IPS,GPF_GRP_ABC=@GPF_GRP_ABC,GPF_ADV_GRP_ABC=@GPF_ADV_GRP_ABC,GPF_GRP_D=@GPF_GRP_D,GPF_ADV_GRP_D=@GPF_ADV_GRP_D,GPF_ABC_Arrears=@GPF_ABC_Arrears,
-					GPF_D_Arrears=@GPF_D_Arrears,GPF_IAS_Arrears=@GPF_IAS_Arrears,GPF_IFS_Arrears=@GPF_IFS_Arrears,Group_Account_Policy=@Group_Account_Policy,
-					House_Rent_Recovery=@House_Rent_Recovery,HRR_Arrear=@HRR_Arrear,MSLI=@MSLI,PLI=@PLI,Service_Charge_and_Garage_Charge=@Service_Charge_and_Garage_Charge,
-					Service_Charge_Arr=@Service_Charge_Arr,Co_Housing_Society=@Co_Housing_Society,Co_Housing_Society_Interest=@Co_Housing_Society_Interest,
-					Computer_Advance=@Computer_Advance,Comp_Adv_Int=@Comp_Adv_Int,Comp_AIS_Int=@Comp_AIS_Int,Recovery_of_Overpayment=@Recovery_of_Overpayment,FA=@FA,
-					HBA_Principal=@HBA_Principal,HBA_Interest=@HBA_Interest,HBA_AIS=@HBA_AIS,HBA_AIS_Int=@HBA_AIS_Int,HBA_For_Land=@HBA_For_Land,HBA_For_Land_Int=@HBA_For_Land_Int,
-					HBA_House=@HBA_House,HBA_House_Int=@HBA_House_Int,HIS=@HIS,MCA=@MCA,MCA_Interest=@MCA_Interest,MCA_AIS=@MCA_AIS,MCA_AIs_Int=@MCA_AIs_Int,Other_Adv=@Other_Adv,
-					Other_Adv_Int=@Other_Adv_Int,Other_Vehical_Advance=@Other_Vehical_Advance,Other_Vehical_Advance_Interest=@Other_Vehical_Advance_Interest,
-					Pay_Advance=@Pay_Advance,TA_Advance=@TA_Advance,Other_GRecov=@Other_GRecov,Total_GRecoveries=@Total_GRecoveries
-					WHERE Yealy_Id=@Yealy_Id AND Recov_Id=@Recov_Id 
-				END
-				ELSE
+				IF(@Recov_Id IS NULL OR @Recov_Id<=0)
 				BEGIN
 					INSERT INTO [dbo].[TDS_t_EmpYearlyGRecov_Details](Yealy_Id,Proffession_Tax,Proffession_Tax_Arrears,Income_Tax,DCPS_Employee_Contribution,DCPS_Pay_Arrear,DCPS_Pay_Arrears_Recovery,DCPS_Regular_Recovery,
 						DCPS_DA_Arrears_Recovery,DCPS_Delayed_Recovery,DedAdj_Employer_Contribution,GIS,Central_GIS,GIS_IAS,GIS_IFS,GIS_IPS,GIS_ZP,GIS_Arrear,
@@ -988,19 +912,9 @@ BEGIN
 					SET @Recov_Id=@@IDENTITY;
 				END
 
-				--[6]. Insert Employee Gov Non Recoveries details
+				--[4.4]. Inserting Yearly GNon-Recoveries Details
 				SET @NonRec_Id=(SELECT NonRec_Id FROM [dbo].[TDS_t_EmpYearlyGNonRecov_Details] Where Yealy_Id=@Yealy_Id)
-				IF(@NonRec_Id<>0)
-				BEGIN
-					UPDATE [dbo].[TDS_t_EmpYearlyGNonRecov_Details] SET Bank_Loan_1=@Bank_Loan_1,Bank_Loan_2=@Bank_Loan_2,Co_Op_Bank_1=@Co_Op_Bank_1,
-						Co_Op_Bank_2=@Co_Op_Bank_2,Co_Op_Cr_Soc_1=@Co_Op_Cr_Soc_1,Co_Op_Cr_Soc_2=@Co_Op_Cr_Soc_2,Co_Op_Hsg_Soc=@Co_Op_Hsg_Soc,LIC_1=@LIC_1,
-						LIC_2=@LIC_2,LIC_3=@LIC_3,Other_Recovery_1=@Other_Recovery_1,Other_Recovery_2=@Other_Recovery_2,RD_1=@RD_1,RD_2=@RD_2,
-						Con_Store=@Con_Store,Matralaya_Bank=@Matralaya_Bank,Mess_Recovery=@Mess_Recovery,Miscellaneous=@Miscellaneous,Elec_Charge=@Elec_Charge,
-						Maintenance_Charge=@Maintenance_Charge,Tel_Charge=@Tel_Charge,Water_Charge=@Water_Charge,Club_Fund=@Club_Fund,Mess_Dev_Fund=@Mess_Dev_Fund,
-						Welfare_Fund=@Welfare_Fund,Other_GNonRecov=@Other_GNonRecov,Total_GNonRecoveries=@Total_GNonRecoveries
-					WHERE Yealy_Id=@Yealy_Id AND NonRec_Id=@NonRec_Id 
-				END
-				ELSE
+				IF(@NonRec_Id IS NULL OR @NonRec_Id<=0)
 				BEGIN
 					INSERT INTO [dbo].[TDS_t_EmpYearlyGNonRecov_Details](Yealy_Id,Bank_Loan_1,Bank_Loan_2,Co_Op_Bank_1,
 							Co_Op_Bank_2,Co_Op_Cr_Soc_1,Co_Op_Cr_Soc_2,Co_Op_Hsg_Soc,LIC_1,LIC_2,LIC_3,Other_Recovery_1,Other_Recovery_2,RD_1,RD_2,Con_Store,Matralaya_Bank,
@@ -1018,8 +932,8 @@ BEGIN
 					SET @NonRec_Id=@@IDENTITY;
 				END
 			END
-			FETCH NEXT FROM K INTO @Sevaarth_Id,@DDO_Code,@EMP_PANNo,@PAN_Status,@UID_No,@EID_No,@Name_AsPerSevaarth,@DBO_AsPerSevaarth,@Name_AsPerIT,
-		@DBO_AsPerIT,@Designation_Id,@Designation,@DOJ,@DOR,@Contact_No,@Email_Id,@Gender_Id,@Address,@IsManual,@IsSeniorCitizen,@IsDCPS,@Account_No,
+			FETCH NEXT FROM K INTO @DDO_Code,@EMP_PANNo,@PAN_Status,@UID_No,@EID_No,@Name_AsPerIT,
+		@DBO_AsPerIT,@Designation_Id,@Designation,@DOJ,@DOR,@Contact_No,@Email_Id,@Address,@IsManual,@IsSeniorCitizen,@IsDCPS,@Account_No,
 		@Bank_Name,@IFSC_Code,@GPF_DCPS_AccountNo,@BankStatus,@Yealy_Id,@Voucher_Id,@Fin_Year,@Bill_Month,@Bill_Year,@PayBill_Type,@Vourcher_Date,
 		@Voucher_No,@Net_Pay,@YeaylyStatus,@PayIn_PB_GP,@Basic_Pay,@Basic_Arrear,@Official_Pay,@Personal_Pay,@CLA_Pay,@Special_Pay,@Writer_Pay,
 		@Leave_Salary,@DA	,@DA_7PC,@Additional_DA,@Central_DA,@DA_Arrear,@DA_On_TA,@Dearness_Pay,@Additional_Pay,@HRA,@Additional_HRA,@HRA_Arrear,
@@ -1049,11 +963,10 @@ BEGIN
 	SET @Status=1;
 
 	RETURN(0)
-
 spError:
 	IF(ISNULL(DATALENGTH(@ErrMsg),0))>0
 	BEGIN
-		SELECT @ErrMsg='TDS_sp_insSevaarthData: '+@ErrMsg
+		SELECT @ErrMsg='TDS_sp_ins_updLPCData: '+@ErrMsg
 		RAISERROR(@ErrMsg,18,1)
 	END
 

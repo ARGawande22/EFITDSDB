@@ -1,4 +1,6 @@
-﻿
+﻿Use TDSLive
+GO
+
 Create   Procedure [dbo].[TDS_sp_insVoucherDetails]
 	@DDOCode NVARCHAR(10)=NULL,
 	@BillHead NVARCHAR(50)=NULL,
@@ -14,6 +16,7 @@ Create   Procedure [dbo].[TDS_sp_insVoucherDetails]
 	@isKoshwahini NVARCHAR(1),
 	@isBinView NVARCHAR(1),
 	@isOltas NVARCHAR(1),
+	@IsLPC NVARCHAR(1)='N',
 	@SourceId NVARCHAR(1),
 	@Status NVARCHAR(1),
 	@UserId Int, 
@@ -80,6 +83,7 @@ BEGIN
 						[IsKoshwahini],
 						[IsBinview],
 						[IsOltas],
+						[IsLPC],
 						[SourceId],
 						[InsertedOn],
 						[InsertedBy],
@@ -98,6 +102,7 @@ BEGIN
 						@isKoshwahini,
 						@isBinView,
 						@isOltas,
+						@IsLPC,
 						@SourceId,
 						@GetDate,
 						@UserId,
@@ -118,8 +123,9 @@ BEGIN
 			[Bill_Month]=@Bill_Month,
 			[Bill_Year]=@Bill_Year,
 			[PayBill_Type]=@PayBill_Type,			
-			[IsBinview]=@isBinView,
+			[IsBinview]=CASE WHEN (SourceId=2 AND IsBinview='Y') THEN IsBinview ELSE isBinView END,--@isBinView,
 			[IsOltas]=@isOltas,
+			[IsLPC]=@IsLPC,
 			[SourceId]=@SourceId,
 			[UpdatedOn]=@GetDate,
 			[updatedBy]=@UserId,

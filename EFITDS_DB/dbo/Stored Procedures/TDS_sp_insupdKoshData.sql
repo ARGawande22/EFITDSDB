@@ -1,4 +1,6 @@
-﻿
+﻿Use TDSLive
+GO
+
 Create   Procedure [dbo].[TDS_sp_insupdKoshData]
 	@loginId INT
 	,@DDOCode NVARCHAR(10)
@@ -101,22 +103,23 @@ BEGIN
 			BEGIN
 				--[1]. Checking  voucher Exist or Not
 				SET @Voucher_Id=(SELECT Voucher_Id FROM [dbo].[TDS_t_Voucher_Details] WHERE DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate
-												and Voucher_Amount=@VoucherAmount and [Quarter]=@Quarter and SourceId in(1,2) and ([Status]='Y' OR [Status]='N'))
+												and (Voucher_Amount=@VoucherAmount OR IsLPC='Y') and [Quarter]=@Quarter and SourceId in(1,2) and ([Status]='Y' OR [Status]='N'))
 
 				SET @SourceId=(SELECT SourceId FROM [dbo].[TDS_t_Voucher_Details] WHERE DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate
-												and Voucher_Amount=@VoucherAmount and [Quarter]=@Quarter and SourceId in(1,2) and ([Status]='Y' OR [Status]='N'))
+												and (Voucher_Amount=@VoucherAmount OR IsLPC='Y') and [Quarter]=@Quarter and SourceId in(1,2) and ([Status]='Y' OR [Status]='N'))
 				IF(@Voucher_Id>0)
 				BEGIN
 				UPDATE [dbo].[TDS_t_Voucher_Details] SET Form_Type=CASE WHEN @SourceId=1 THEN Form_Type ELSE @Form_Type END,
-																SubForm_Type=@SubForm_Type,IsKoshwahini='Y',IsOltas='N',
+														Voucher_Amount=CASE WHEN IsLPC='Y' THEN @VoucherAmount ELSE Voucher_Amount END,
+														SubForm_Type=@SubForm_Type,IsKoshwahini='Y',IsOltas='N',IsLPC='N',
 								UpdatedOn=@GetDate,updatedBy=@loginId
 					WHERE Voucher_Id=@Voucher_Id					
 				END
 				ELSE
 				BEGIN
-					INSERT INTO [dbo].[TDS_t_Voucher_Details](DDO_Code,Fin_Year,[Quarter],Form_Type,SubForm_Type,Vourcher_Date,Voucher_No,Voucher_Amount,IsKoshwahini,IsOltas,SourceId,
+					INSERT INTO [dbo].[TDS_t_Voucher_Details](DDO_Code,Fin_Year,[Quarter],Form_Type,SubForm_Type,Vourcher_Date,Voucher_No,Voucher_Amount,IsKoshwahini,IsOltas,IsLPC,SourceId,
 															InsertedOn,InsertedBy,[Status]) 
-						   VALUES(@DDOCode,@FinYear,@Quarter,@Form_Type,@SubForm_Type,@VoucherDate,@VoucherNo,@VoucherAmount,'Y','N',2,@GetDate,@loginId,'N')
+						   VALUES(@DDOCode,@FinYear,@Quarter,@Form_Type,@SubForm_Type,@VoucherDate,@VoucherNo,@VoucherAmount,'Y','N','N',2,@GetDate,@loginId,'N')
 				
 				SET @Voucher_Id=@@IDENTITY;	
 				END

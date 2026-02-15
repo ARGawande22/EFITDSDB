@@ -1,4 +1,6 @@
-﻿
+﻿Use TDSLive
+Go
+
 Create   Procedure [dbo].[TDS_sp_GetFinYearSlab]
 	@Year_Id int
 
@@ -27,7 +29,7 @@ BEGIN
 	  SELECT @Status=[Status]
 	  FROM  [dbo].[TDS_t_YearSlab]
 	  Where [Year_Id]=@Year_Id
-	  and Status='Y'
+	  --and Status='Y'
 
 		IF(@@ROWCOUNT=0)
 		BEGIN
@@ -45,10 +47,12 @@ BEGIN
 			ys.EducationalCess,
 			ys.Surcharge,
 			ys.IsNewRegime,
-			ys.IsSeniorCitizen
+			ys.IsSeniorCitizen,
+			ys.[Status]
 		FROM [dbo].[TDS_t_Year] y with(nolock)
 			JOIN [dbo].[TDS_t_YearSlab] ys with(nolock) ON y.Year_Id=ys.Year_Id
-		WHERE ys.Status='Y' and ys.Year_Id=@Year_Id
+		WHERE --ys.Status='Y' and 
+		ys.Year_Id=@Year_Id
 		ORDER BY ys.Slab_Id
 
 	RETURN(0)

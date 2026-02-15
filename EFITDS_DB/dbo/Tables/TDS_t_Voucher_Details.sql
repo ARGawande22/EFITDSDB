@@ -14,6 +14,7 @@
     [IsKoshwahini]   NVARCHAR (1)   NULL,
     [IsBinview]      NVARCHAR (1)   NULL,
     [IsOltas]        NVARCHAR (1)   NULL,
+    [IsLPC]          NVARCHAR (1)   NULL,
     [SourceId]       INT            NULL,
     [InsertedOn]     DATE           NULL,
     [InsertedBy]     INT            NULL,

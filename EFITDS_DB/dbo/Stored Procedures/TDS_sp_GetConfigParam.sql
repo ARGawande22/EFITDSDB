@@ -1,4 +1,6 @@
-﻿
+﻿Use TDSLive
+Go
+
 Create   Procedure [dbo].[TDS_sp_GetConfigParam]
 
 --***********************************************************
@@ -19,9 +21,11 @@ BEGIN
 	Select
 		cp.[Config_Id],
 		cp.[KeyName],
-		cp.[Value]			
+		cp.[Value],
+		cp.[Encript],
+		cp.[Status]
 	FROM [dbo].[TDS_t_ConfigurationParameter] cp with(nolock)
-	WHERE cp.Status='Y'
+	--WHERE cp.Status='Y'
 	ORDER BY cp.Config_Id
 	  
 	RETURN(0)

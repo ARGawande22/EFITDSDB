@@ -10,22 +10,6 @@ CREATE   Procedure [dbo].[TDS_sp_ins_updEmpTransferHistoryBySevaarthId]
 --***
 --*** Created On 25 Jan 2026 By A.R.Gawande
 --***
-/*PURPOSE:
-       Inserts or updates an employee's DDO transfer history
-       so that the record for @DDO_Code correctly covers @VDate,
-       without creating overlaps or gaps between history rows.
-
-     PARAMETERS:
-       @DDO_Code    - The DDO office code being processed
-       @Sevaarth_Id - Employee unique ID
-       @VDate       - Voucher / transaction date
-       @Result      - OUTPUT: 1=success, 0=no matching record, -1=error
-
-     CHANGE LOG:
-       v2.0  - Rewrote with TRY/CATCH, transaction safety,
-               fixed WHERE clause bug, removed arbitrary date offsets,
-               added overlap/gap prevention.
- */
 --***********************************************************
 AS
 BEGIN
@@ -34,399 +18,234 @@ BEGIN
 	SET ANSI_NULLS ON
 	SET ANSI_WARNINGS ON
 
-	DECLARE @ErrMsg         NVARCHAR(500)
-           ,@SystemEndDate  DATETIME
-           ,@GetDate        DATETIME
+	DECLARE @ErrMsg		NVARCHAR(255)			
+			
+	--[1].  Update Employee transfer History
+	DECLARE @GetDate	DATETIME
+			,@Status NVARCHAR(1)
+			,@SystemEndDate DATETIME			
+			,@RowCnt INT
 
-           -- Matched record fields
-           ,@Transfer_Id        INT
-		   ,@tmpSevaarth_Id		nvarchar(15)
-           ,@tmpDDO_Code        NVARCHAR(11)
-		   ,@tmpPreTransfer_Id  INT
-		   ,@tmpPreDDO_Code     NVARCHAR(11)
-           ,@tmpPreValidTo      DATE
-           ,@tmpValidFrom       DATE
-           ,@tmpValidTo         DATE
-		   ,@tmpNextTransfer_Id INT
-		   ,@tmpNextDDO_Code    NVARCHAR(11)
-           ,@tmpNextValidFrom   DATE
+	SET @GetDate=GETDATE();
+	SET @SystemEndDate=(Select [dbo].[fn_GetSystemEndDate]());
 
-    SET @GetDate       = GETDATE();
-    SET @SystemEndDate = (SELECT [dbo].[fn_GetSystemEndDate]());
-    SET @Result        = 0;
+	--[1.] Check emp entry not present then Insert new entry and Return	
+	IF NOT EXISTS (SELECT * FROM [dbo].[TDS_t_EmpTransfer_History] WHERE Sevaarth_Id=@Sevaarth_Id)
+	BEGIN
+	   /* Insert new record */
+		INSERT INTO [dbo].[TDS_t_EmpTransfer_History]
+		(
+		    Sevaarth_Id,
+		    CurDDO_Code,
+		    ExtDDO_Code,
+		    ValidFrom,
+		    ValidTo,
+		    Transfer_Date,
+		    Status
+		)
+		VALUES
+		(
+		    @Sevaarth_Id,
+		    @DDO_Code,
+		    NULL,
+		    @VDate,
+		    @SystemEndDate,
+		    NULL,
+		    'Y'
+		);
 
-	BEGIN TRY
-		BEGIN TRANSACTION;
-
-	-- [1] No history at all for this employee → Insert fresh row
-		 IF NOT EXISTS (SELECT 1
-            FROM [dbo].[TDS_t_EmpTransfer_History]
-            WHERE Sevaarth_Id = @Sevaarth_Id)
-		 BEGIN
-            INSERT INTO [dbo].[TDS_t_EmpTransfer_History]
-            (
-                Sevaarth_Id,
-                CurDDO_Code,
-                ExtDDO_Code,
-                ValidFrom,
-                ValidTo,
-                Transfer_Date,
-                Status
-            )
-            VALUES
-            (
-                @Sevaarth_Id,
-                @DDO_Code,
-                NULL,
-                @VDate,
-                @SystemEndDate,
-                NULL,
-                'Y'
-            );
-
-            SET @Result = 1;
-            COMMIT TRANSACTION;
-            RETURN;   -- Nothing more to do for a brand-new employee
-         END
-
-	-- [2] Build sliding window temp table using LAG / LEAD.So, we can see Previous / Current / Next rows together
-		IF OBJECT_ID('tempdb..#ExistingHistory') IS NOT NULL
-            DROP TABLE #ExistingHistory;
-
-        CREATE TABLE #ExistingHistory
-        (
-            Transfer_Id     INT,
-            Sevaarth_Id     NVARCHAR(15)    NOT NULL,
-            DDO_Code        NVARCHAR(11)    NULL,
-            PreTransferId   INT            NULL,	-- previous row TransferId
-			PreDDO_Code     NVARCHAR(11)    NULL,	-- previous row DDOCode
-            PreValidTo      DATE            NULL,   -- previous row ValidTo
-            ValidFrom       DATE            NULL,   -- this row ValidFrom
-            ValidTo         DATE            NULL,   -- this row ValidTo
-			NextTransferId   INT            NULL,	-- Next row TransferId
-			NextDDO_Code     NVARCHAR(11)    NULL,	-- Next row DDOCode
-            NextValidFrom   DATE            NULL   -- next row ValidFrom            
-        );
-
-        INSERT INTO #ExistingHistory
-        (	Transfer_Id,
-			Sevaarth_Id,
-			DDO_Code,
-            PreTransferId,
-			PreDDO_Code,
-			PreValidTo,
-            ValidFrom,
-			ValidTo,
-			NextTransferId,
-			NextDDO_Code,
-            NextValidFrom			
-        )
-        SELECT
-            Transfer_Id,
-            Sevaarth_Id,
-            CurDDO_Code,
-            LAG(Transfer_Id)   OVER (PARTITION BY Sevaarth_Id ORDER BY ValidFrom ASC) AS PreTransfer_Id,
-			LAG(CurDDO_Code)   OVER (PARTITION BY Sevaarth_Id ORDER BY ValidFrom ASC) AS PreDDO_Code,    
-            LAG(ValidTo)    OVER (PARTITION BY Sevaarth_Id ORDER BY ValidFrom ASC) AS PreValidTo,
-            ValidFrom,
-            ValidTo,
-			LEAD(Transfer_Id)  OVER (PARTITION BY Sevaarth_Id ORDER BY ValidFrom ASC) AS NextTransfer_Id,
-			LEAD(CurDDO_Code)  OVER (PARTITION BY Sevaarth_Id ORDER BY ValidFrom ASC) AS NextDDO_Code,    
-            LEAD(ValidFrom) OVER (PARTITION BY Sevaarth_Id ORDER BY ValidFrom ASC) AS NextValidFrom            
-        FROM  [dbo].[TDS_t_EmpTransfer_History]
-        WHERE Sevaarth_Id = @Sevaarth_Id
-        ORDER BY ValidFrom ASC;
-
-
-	-- ******************************************************************
-    -- [3] Locate the best matching row for @VDate
-	--
-    --   Priority order:
-    --     P1 → Same DDO, @VDate falls inside this row's range
-	--     P2 → Same DDO, @VDate is before this row but after previous row
-	--     P3 → Same DDO, @VDate is after this row but before next row
-	--     P4 → Any DDO  (broadest fallback, same date logic as P1-P3)
-	-- ******************************************************************
-
-	-- P1: @VDate inside the row
-        SELECT TOP 1
-            @Transfer_Id      = Transfer_Id,
-            @tmpDDO_Code      = DDO_Code,
-			@tmpPreTransfer_Id= PreTransferId,
-			@tmpPreDDO_Code=PreDDO_Code,
-            @tmpPreValidTo    = PreValidTo,
-            @tmpValidFrom     = ValidFrom,
-            @tmpValidTo       = ValidTo,
-			@tmpNextTransfer_Id= NextTransferId,
-			@tmpNextDDO_Code=NextDDO_Code,
-            @tmpNextValidFrom = NextValidFrom
-        FROM #ExistingHistory
-        WHERE DDO_Code = @DDO_Code
-          AND @VDate BETWEEN ValidFrom AND ValidTo;
- 
-		 IF @Transfer_Id>0 AND @Transfer_Id IS Not NULL
-		 BEGIN
-			SET @Result = 1;
-            COMMIT TRANSACTION;
-            RETURN;
-		 END
-
-
-	-- P2: Same DDO, @VDate is before ValidFrom but after previous row ended
-        SELECT TOP 1
-               @Transfer_Id      = Transfer_Id,
-			@tmpDDO_Code      = DDO_Code,
-			@tmpPreTransfer_Id= PreTransferId,
-			@tmpPreDDO_Code=PreDDO_Code,
-			@tmpPreValidTo    = PreValidTo,
-			@tmpValidFrom     = ValidFrom,
-			@tmpValidTo       = ValidTo,
-			@tmpNextTransfer_Id= NextTransferId,
-			@tmpNextDDO_Code=NextDDO_Code,
-			@tmpNextValidFrom = NextValidFrom
-        FROM #ExistingHistory
-        WHERE DDO_Code = @DDO_Code
-          AND ValidFrom > @VDate
-          AND (PreValidTo < @VDate OR PreValidTo IS NULL)
-        ORDER BY ValidFrom ASC;  -- take the closest future row       
-
-		 IF @Transfer_Id>0 AND @Transfer_Id IS Not NULL
-		 BEGIN			 
-			  UPDATE [dbo].[TDS_t_EmpTransfer_History]
-              SET
-                  ValidFrom = CASE WHEN ValidFrom > @VDate THEN @VDate ELSE ValidFrom END                  
-              WHERE Transfer_Id  = @Transfer_Id
-              AND CurDDO_Code  = @DDO_Code;
-
-			   IF @tmpPreValidTo IS NOT NULL AND @tmpPreValidTo=@VDate  
-			   BEGIN
-					UPDATE [dbo].[TDS_t_EmpTransfer_History]
-					SET ValidTo = DATEADD(DAY, -1, @VDate)                                  
-					WHERE Sevaarth_Id = @Sevaarth_Id
-							AND ValidTo     = @tmpPreValidTo
-							AND Transfer_Id=@tmpPreTransfer_Id
-			   END
-
-			SET @Result = 1;
-            COMMIT TRANSACTION;
-            RETURN;
-		 END
-
-	-- P3: Same DDO, @VDate is after ValidTo but before next row starts
-        SELECT TOP 1
-            @Transfer_Id      = Transfer_Id,
-			@tmpDDO_Code      = DDO_Code,
-			@tmpPreTransfer_Id= PreTransferId,
-			@tmpPreDDO_Code=PreDDO_Code,
-			@tmpPreValidTo    = PreValidTo,
-			@tmpValidFrom     = ValidFrom,
-			@tmpValidTo       = ValidTo,
-			@tmpNextTransfer_Id= NextTransferId,
-			@tmpNextDDO_Code=NextDDO_Code,
-			@tmpNextValidFrom = NextValidFrom
-         FROM #ExistingHistory
-         WHERE DDO_Code = @DDO_Code
-           AND ValidTo < @VDate
-           AND (NextValidFrom > @VDate OR NextValidFrom IS NULL)
-         ORDER BY ValidTo DESC;  -- take the most recent past row
-       
-	   IF @Transfer_Id>0 AND @Transfer_Id IS Not NULL
-		 BEGIN			 
-			  UPDATE [dbo].[TDS_t_EmpTransfer_History]
-              SET
-                  ValidTo   = CASE WHEN ValidTo   < @VDate THEN @VDate ELSE ValidTo   END                 
-              WHERE Transfer_Id  = @Transfer_Id
-              AND CurDDO_Code  = @DDO_Code;
-
-			   IF @tmpNextValidFrom IS NOT NULL AND @tmpNextValidFrom=@VDate  
-			   BEGIN
-					UPDATE [dbo].[TDS_t_EmpTransfer_History]
-					SET ValidFrom = DATEADD(DAY, 1, @VDate)                                  
-					WHERE Sevaarth_Id = @Sevaarth_Id
-							AND ValidFrom     = @tmpNextValidFrom
-							AND Transfer_Id=@tmpNextTransfer_Id
-			   END
-
-			SET @Result = 1;
-            COMMIT TRANSACTION;
-            RETURN;
-		 END
-
-
-		 -- P4: Fallback – any DDO, best date match        
-         SELECT TOP 1
-            @Transfer_Id      = Transfer_Id,
-			@tmpDDO_Code      = DDO_Code,
-			@tmpPreTransfer_Id= PreTransferId,
-			@tmpPreDDO_Code=PreDDO_Code,
-			@tmpPreValidTo    = PreValidTo,
-			@tmpValidFrom     = ValidFrom,
-			@tmpValidTo       = ValidTo,
-			@tmpNextTransfer_Id= NextTransferId,
-			@tmpNextDDO_Code=NextDDO_Code,
-			@tmpNextValidFrom = NextValidFrom
-         FROM #ExistingHistory
-         WHERE @VDate BETWEEN ValidFrom AND ValidTo
-            OR (ValidFrom > @VDate AND (PreValidTo < @VDate OR PreValidTo IS NULL))
-            OR (ValidTo   < @VDate AND (NextValidFrom > @VDate OR NextValidFrom IS NULL))
-         ORDER BY
-             -- Prefer the row whose range is closest to @VDate
-             ABS(DATEDIFF(DAY, ValidFrom, @VDate)) ASC;      
-	  
-		IF @Transfer_Id>0 AND @Transfer_Id IS Not NULL
-		BEGIN	
-			IF @tmpDDO_Code<>@DDO_Code AND @VDate BETWEEN @tmpValidFrom AND @tmpValidTo
-			BEGIN
-				UPDATE [dbo].[TDS_t_EmpTransfer_History]
-				SET
-					--ValidFrom = CASE WHEN ValidFrom > @VDate THEN @VDate ELSE ValidFrom END,   
-				    ValidTo   = CASE WHEN ValidTo   > @VDate THEN DATEADD(DAY, -1, @VDate)    ELSE ValidTo   END                 
-				WHERE Transfer_Id  = @Transfer_Id
-				AND CurDDO_Code  = @tmpDDO_Code;
-
-
-				IF @tmpNextDDO_Code<>@DDO_Code
-				BEGIN
-					INSERT INTO [dbo].[TDS_t_EmpTransfer_History]
-					(
-					    Sevaarth_Id, CurDDO_Code, ExtDDO_Code,
-					    ValidFrom, ValidTo, Transfer_Date, Status
-					)
-					VALUES
-					(
-					    @Sevaarth_Id,
-					    @DDO_Code,
-					    NULL,
-					    @VDate,
-					    DATEADD(DAY, -1, @tmpNextValidFrom),
-					    NULL,
-					    'Y'
-					);
-				END				
-			END
-
-			ELSE IF @tmpDDO_Code<>@DDO_Code AND @tmpValidFrom > @VDate AND (@tmpPreValidTo < @VDate OR @tmpPreValidTo IS NULL)
-			BEGIN
-				IF(@tmpPreDDO_Code=@DDO_Code)
-				BEGIN
-					UPDATE [dbo].[TDS_t_EmpTransfer_History]
-					SET
-						ValidTo   = CASE WHEN ValidTo   > @VDate THEN DATEADD(DAY, -1, @VDate)   ELSE ValidTo   END                 
-					WHERE Transfer_Id  = @tmpPreTransfer_Id
-					AND CurDDO_Code  = @tmpPreDDO_Code;
-				END
-				ELSE
-				BEGIN
-					INSERT INTO [dbo].[TDS_t_EmpTransfer_History]
-					(
-					    Sevaarth_Id, CurDDO_Code, ExtDDO_Code,
-					    ValidFrom, ValidTo, Transfer_Date, Status
-					)
-					VALUES
-					(
-					    @Sevaarth_Id,
-					    @DDO_Code,
-					    NULL,
-					    CASE WHEN @tmpPreValidTo Is NULL THEN @VDate ELSE DATEADD(DAY, 1, @tmpPreValidTo) END,
-					    DATEADD(DAY, -1, @tmpValidFrom),
-					    NULL,
-					    'Y'
-					);
-				END
-			END
-
-			ELSE IF @tmpDDO_Code<>@DDO_Code AND @tmpValidTo < @VDate AND (@tmpNextValidFrom > @VDate OR @tmpNextValidFrom IS NULL)
-			BEGIN
-				IF(@tmpNextDDO_Code=@DDO_Code)
-				BEGIN
-					UPDATE [dbo].[TDS_t_EmpTransfer_History]
-					SET
-						ValidFrom   = CASE WHEN ValidFrom   > @VDate THEN @VDate   ELSE ValidFrom   END                    
-					WHERE Transfer_Id  = @tmpNextTransfer_Id
-					AND CurDDO_Code  = @tmpNextDDO_Code;
-				END
-				ELSE
-				BEGIN
-					IF @tmpNextDDO_Code IS NULL AND @tmpValidTo=@SystemEndDate
-					BEGIN 
-						UPDATE [dbo].[TDS_t_EmpTransfer_History]
-						SET
-							ValidTo   =   DATEADD(DAY, -1, @VDate)                    
-						WHERE Transfer_Id  = @Transfer_Id
-						AND CurDDO_Code  = @tmpDDO_Code;
-					END
-
-					INSERT INTO [dbo].[TDS_t_EmpTransfer_History]
-					(
-					    Sevaarth_Id, CurDDO_Code, ExtDDO_Code,
-					    ValidFrom, ValidTo, Transfer_Date, Status
-					)
-					VALUES
-					(
-					    @Sevaarth_Id,
-					    @DDO_Code,
-					    NULL,
-					    CASE WHEN @tmpValidTo=@SystemEndDate THEN @VDate ELSE DATEADD(DAY, 1, @tmpValidTo) END,
-					   CASE WHEN @tmpNextValidFrom IS NULL THEN @SystemEndDate ELSE DATEADD(DAY, -1, @tmpNextValidFrom) END,
-					    NULL,
-					    'Y'
-					);
-				END
-			END
-
-			SET @Result = 1;
-			COMMIT TRANSACTION;
-			RETURN;
+		IF(@@ERROR <> 0)
+		BEGIN
+			Select @ErrMsg='Error while inserting new transfer record.'
+			GOTO spError
 		END
 
-		IF @Transfer_Id=0 OR @Transfer_Id IS NULL 
-        BEGIN
-            INSERT INTO [dbo].[TDS_t_EmpTransfer_History]
-            (
-                Sevaarth_Id, CurDDO_Code, ExtDDO_Code,
-                ValidFrom, ValidTo, Transfer_Date, Status
-            )
-            VALUES
-            (
-                @Sevaarth_Id,
-                @DDO_Code,
-                NULL,
-                @VDate,
-                @SystemEndDate,
-                NULL,
-                'Y'
-            );
+		SET @Result=1;
 
-            SET @Result = 1;            
-        END
+		RETURN(0)	
+	END	
 
-		COMMIT TRANSACTION;
-        RETURN;
+	--[2.]  Updating record based on Voucher Date	   
+	IF OBJECT_ID('tempdb..#ExistingHistory') IS NOT NULL
+		DROP TABLE #ExistingHistory
 
-	END TRY
-    BEGIN CATCH
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
+	CREATE TABLE #ExistingHistory(
+			Transfer_Id			int,
+			Sevaarth_Id			nvarchar(15) NOT NULL,
+			DDO_Code			nvarchar(11) NULL,
+			PreValidFrom		date		 NULL,
+			PreValidTo			date		 NULL,
+			ValidFrom			date		 NULL,
+			ValidTo				date         NULL,
+			NextValidFrom		date		 NULL,
+			NextValidTo			date         NULL)
+	
+	IF(@@ERROR <> 0)
+	BEGIN
+		Select @ErrMsg='Error creating temporary Table.'
+		GOTO spError
+	END
 
-        SET @Result = -1;
+	INSERT INTO #ExistingHistory(Transfer_Id,
+								 Sevaarth_Id,		
+								 DDO_Code,			
+								 PreValidFrom,	
+								 PreValidTo,		
+								 ValidFrom,		
+								 ValidTo,			
+								 NextValidFrom,	
+								 NextValidTo)
+						SELECT  Transfer_Id,
+								Sevaarth_Id,
+							    CurDDO_Code,
+								LAG(ValidFrom) OVER (PARTITION BY Sevaarth_Id ORDER BY ValidFrom ASC) AS PreviousRecordStartDate,
+								LAG(ValidTo) OVER (PARTITION BY Sevaarth_Id ORDER BY ValidTo ASC) AS PreviousRecordEndDate,
+								ValidFrom,
+								ValidTo,
+								LEAD(ValidFrom) OVER (PARTITION BY Sevaarth_Id ORDER BY ValidFrom ASC) AS NextRecordStartDate,
+								LEAD(ValidTo) OVER (PARTITION BY Sevaarth_Id ORDER BY ValidTo ASC) AS NextRecordEndDate
+						FROM  [dbo].[TDS_t_EmpTransfer_History]
+						Where Sevaarth_Id=@Sevaarth_Id
+						ORDER BY ValidTo ASC;
 
-        -- Re-raise error with full detail
-        DECLARE @ErrNum     INT            = ERROR_NUMBER()
-               ,@ErrSev     INT            = ERROR_SEVERITY()
-               ,@ErrState   INT            = ERROR_STATE()
-               ,@ErrProc    NVARCHAR(200)  = ERROR_PROCEDURE()
-               ,@ErrLine    INT            = ERROR_LINE()
-               ,@ErrMessage NVARCHAR(2048) = ERROR_MESSAGE();
+	IF(@@ERROR <> 0)
+	BEGIN
+		Select @ErrMsg='Error while getting employee extsing history.'
+		GOTO spError
+	END
+	
+	DECLARE @Transfer_Id			INT,
+			@tmpSevaarth_Id			nvarchar(15),
+			@tmpDDO_Code			nvarchar(11),			
+			@tmpPreValidTo			date,	
+			@tmpValidFrom			date,	
+			@tmpValidTo				date ,  
+			@tmpNextValidFrom		date
 
-        RAISERROR(
-            N'Error in %s (Line %d): [%d] %s',
-            @ErrSev,
-            @ErrState,
-            @ErrProc,
-            @ErrLine,
-            @ErrNum,
-            @ErrMessage
-        );
-    END CATCH
+	Select @Transfer_Id=Transfer_Id,
+		   @tmpDDO_Code=DDO_Code,
+		   @tmpPreValidTo=PreValidTo,
+		   @tmpValidFrom=ValidFrom,
+		   @tmpValidTo=ValidTo,
+		   @tmpNextValidFrom=NextValidFrom
+	FROM #ExistingHistory WHERE DDO_Code=@DDO_Code AND ((@VDate BETWEEN ValidFrom AND ValidTo) 
+							 OR (ValidFrom>@VDate AND (PreValidTo<@VDate OR PreValidTo IS NUll)))
 
+	IF @Transfer_Id=0 OR @Transfer_Id IS NULL
+	BEGIN
+		Select @Transfer_Id=Transfer_Id,
+		   @tmpDDO_Code=DDO_Code,
+		   @tmpPreValidTo=PreValidTo,
+		   @tmpValidFrom=ValidFrom,
+		   @tmpValidTo=ValidTo,
+		   @tmpNextValidFrom=NextValidFrom
+		FROM #ExistingHistory WHERE DDO_Code=@DDO_Code AND ((@VDate BETWEEN ValidFrom AND ValidTo) 
+							 OR (ValidTo < @VDate AND (NextValidFrom>@VDate OR NextValidFrom IS NUll)))
+	END
+	
+	IF @Transfer_Id=0 OR @Transfer_Id IS NULL
+	BEGIN
+		Select @Transfer_Id=Transfer_Id,
+			   @tmpDDO_Code=DDO_Code,
+			   @tmpPreValidTo=PreValidTo,
+			   @tmpValidFrom=ValidFrom,
+			   @tmpValidTo=ValidTo,
+			   @tmpNextValidFrom=NextValidFrom
+		FROM #ExistingHistory WHERE ((@VDate BETWEEN ValidFrom AND ValidTo) 
+								 OR (ValidFrom>@VDate AND (PreValidTo<@VDate OR PreValidTo IS NUll)) 
+								 OR (ValidTo < @VDate AND (NextValidFrom>@VDate OR NextValidFrom IS NUll)))
+	END
+		
+	IF @Transfer_Id<>0 AND @Transfer_Id IS NOT NULL
+	BEGIN
+		IF (@tmpDDO_Code=@DDO_Code)
+		BEGIN
+			UPDATE [dbo].[TDS_t_EmpTransfer_History] 
+			SET ValidFrom=CASE WHEN ValidFrom>@VDate THEN @VDate ELSE ValidFrom END,
+				ValidTo=CASE WHEN ValidTo<@VDate THEN @VDate ELSE ValidTo END
+			WHERE Transfer_Id=@Transfer_Id AND CurDDO_Code=@DDO_Code
+
+			IF  @tmpPreValidTo IS NOT NULL
+			BEGIN
+				UPDATE [dbo].[TDS_t_EmpTransfer_History] 
+				SET ValidTo=CASE WHEN ValidTo>@VDate THEN @VDate ELSE ValidTo END
+				WHERE ValidTo=@tmpPreValidTo AND Sevaarth_Id=@Sevaarth_Id
+			END
+
+			IF  @tmpNextValidFrom IS NOT NULL
+			BEGIN
+				UPDATE [dbo].[TDS_t_EmpTransfer_History] 
+				SET ValidFrom=CASE WHEN ValidFrom<@VDate THEN @VDate ELSE ValidFrom END
+				WHERE ValidFrom=@tmpNextValidFrom AND Sevaarth_Id=@Sevaarth_Id
+			END
+
+			IF(@@ERROR <> 0)
+			BEGIN
+				Select @ErrMsg='Error while updating employee history.'
+				GOTO spError
+			END
+		END
+		ELSE
+		BEGIN
+			UPDATE [dbo].[TDS_t_EmpTransfer_History] 
+			SET ValidFrom=CASE WHEN ValidFrom>@VDate THEN @VDate ELSE ValidFrom END,
+				ValidTo=CASE WHEN ValidTo<@VDate THEN @VDate ELSE ValidTo END
+			WHERE Transfer_Id=@Transfer_Id AND CurDDO_Code=@tmpDDO_Code
+
+			IF EXISTS (SELECT * FROM [dbo].[TDS_t_EmpTransfer_History] WHERE @DDO_Code=@DDO_Code  and ValidTo=@tmpPreValidTo)
+			BEGIN
+			     Update [dbo].[TDS_t_EmpTransfer_History]
+				 SET ValidFrom=CASE WHEN ValidFrom>@VDate THEN @VDate ELSE ValidFrom END,
+					 ValidTo=CASE WHEN @VDate > @tmpValidFrom THEN (DATEADD(DAY, -1, @tmpValidFrom)) ELSE @VDate END--CASE WHEN ValidTo>@VDate THEN @VDate ELSE ValidTo END
+				 WHERE @DDO_Code=@DDO_Code  and ValidTo=@tmpPreValidTo	
+			END
+			ELSE
+			BEGIN
+				/* Insert new record */
+				INSERT INTO [dbo].[TDS_t_EmpTransfer_History]
+				(
+				    Sevaarth_Id,
+				    CurDDO_Code,
+				    ExtDDO_Code,
+				    ValidFrom,
+				    ValidTo,
+				    Transfer_Date,
+				    Status
+				)
+				VALUES
+				(
+				    @Sevaarth_Id,
+				    @DDO_Code,
+				    NULL,
+				    --@VDate,
+					CASE WHEN (@VDate >= @tmpValidFrom AND @tmpValidTo<>@SystemEndDate) THEN (DATEADD(DAY, -2, @tmpValidFrom)) ELSE @VDate END,
+				    CASE WHEN (Select Max(ValidFrom) From [dbo].[TDS_t_EmpTransfer_History] where Sevaarth_Id=@Sevaarth_Id)>@VDate 
+						 THEN  CASE WHEN (DATEADD(MONTH, 1, @VDate)) > @tmpValidFrom THEN (DATEADD(DAY, -1, @tmpValidFrom)) ELSE (DATEADD(MONTH, 1, @VDate)) END
+						 ELSE @SystemEndDate END,
+				    NULL,
+				    'Y'
+				);
+			END
+
+			IF(@@ERROR <> 0)
+			BEGIN
+				Select @ErrMsg='Error while updating/inserting existing transfer history.'
+				GOTO spError
+			END
+		END
+	END
+
+	SET @Status=1;
+
+	RETURN(0)
+spError:
+	IF(ISNULL(DATALENGTH(@ErrMsg),0))>0
+	BEGIN
+		SELECT @ErrMsg='TDS_sp_ins_updEmpTransferHistoryBySevaarthId: '+@ErrMsg
+		RAISERROR(@ErrMsg,18,1)
+	END
+
+	SET @Result=0;
+
+	RETURN(-1)
 END

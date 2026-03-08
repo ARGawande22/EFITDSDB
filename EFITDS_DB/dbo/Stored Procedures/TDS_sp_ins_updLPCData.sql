@@ -543,6 +543,15 @@ BEGIN
 			VALUES(@Sevaarth_Id,@CurDDOCode,NULL,@CurDDOJoiningDate,@SystemEndDate,NULL,'Y')
 		END
 	END
+	ELSE IF @TansferCurDDOCode = @CurDDOCode
+	BEGIN
+		UPDATE et
+			SET	et.ValidFrom=CASE WHEN et.ValidFrom > @CurDDOJoiningDate THEN @CurDDOJoiningDate ELSE et.ValidFrom END,
+				et.ValidTo=CASE WHEN et.ValidTo < @CurDDOJoiningDate THEN @CurDDOJoiningDate ELSE et.ValidTo END
+				,et.[Status]='Y'
+			FROM [dbo].[TDS_t_EmpTransfer_History] et 
+			WHERE Transfer_Id=@Transfer_Id
+	END
 
 	--[3]. Manage the Emp Existing Transfer History
 		DECLARE @EmpTable [dbo].[EmpTransfer];

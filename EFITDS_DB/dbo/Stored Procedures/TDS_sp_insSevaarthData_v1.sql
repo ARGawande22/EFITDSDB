@@ -777,9 +777,8 @@ BEGIN
 					SET @Designation_Id=@@IDENTITY;
 				END
 
-				Declare @MaxVoucherDate  DATETIME;
 				--[2]. Insert Employee if Not exist.
-				IF NOT EXISTS (SELECT 1 FROM [dbo].[TDS_t_Emp_Details] WHERE Sevaarth_Id=@Sevaarth_Id)
+				IF NOT EXISTS (SELECT * FROM [dbo].[TDS_t_Emp_Details] WHERE Sevaarth_Id=@Sevaarth_Id)
 				BEGIN
 				  INSERT INTO [dbo].[TDS_t_Emp_Details](
 											Sevaarth_Id,
@@ -847,17 +846,9 @@ BEGIN
 				 END
 				END
 				ELSE
-				 BEGIN					
-					SELECT @MaxVoucherDate=MAX(vd.Vourcher_Date)
-					FROM [dbo].[TDS_t_EmpYearly_Details] eyd with (Nolock)
-						JOIN [dbo].[TDS_t_Voucher_Details] vd with (Nolock) ON eyd.Voucher_Id=vd.Voucher_Id
-					WHERE eyd.Sevaarth_Id=@Sevaarth_Id
-
+				 BEGIN
 					UPDATE [dbo].[TDS_t_Emp_Details] 
-					SET DDO_Code=CASE WHEN (@MaxVoucherDate IS Not NULL AND @MaxVoucherDate<@Vourcher_Date)
-									  THEN @DDO_Code
-								 ELSE DDO_Code END,
-						EMP_PANNo=@EMP_PANNo,
+					SET EMP_PANNo=@EMP_PANNo,
 						PAN_Status=CASE WHEN EMP_PANNo<>@EMP_PANNo THEN 'N' ELSE PAN_Status END,
 						UID_No=@UID_No,
 						EID_No=@EID_No,

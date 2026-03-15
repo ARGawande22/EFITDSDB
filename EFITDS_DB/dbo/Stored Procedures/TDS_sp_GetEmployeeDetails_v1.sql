@@ -1,14 +1,14 @@
 USE TDSLive;
 GO
 
-Create OR Alter Procedure [dbo].[TDS_sp_GetEmployeeDetails]
+CREATE OR Alter Procedure [dbo].[TDS_sp_GetEmployeeDetails_v1]
 	@DDOCode NVARCHAR(10)
 	,@FinYear NVARCHAR(11)
 	,@Quarter CHAR(3)
 
 --***********************************************************
 --***
---*** Created On 12 Oct 2025 By A.R.Gawande
+--*** Created On 15 Mar 2026 By A.R.Gawande
 --***
 --***********************************************************
 AS
@@ -52,6 +52,9 @@ BEGIN
 	--Get Voucher Details
 	SELECT	empv.Sevaarth_Id
 			,empv.DDO_Code
+			--,eth.CurDDO_Code
+			--,eth.ValidFrom
+			--,eth.ValidTo
 			,empv.EMP_PANNo
 			,empv.PAN_Status
 			,empv.UID_No
@@ -83,15 +86,23 @@ BEGIN
 			,empv.Account_No
 			,empv.GPF_DCPS_AccountNo
 			,empv.BankStatus
-			,Transferred=CASE WHEN empv.DDO_Code!=@DDOCode THEN 'Y'
-								ELSE 'N' END
+			,Transferred=CASE WHEN empv.DDO_Code!=@DDOCode THEN 'Transferred'
+								ELSE '' END
 			,IsPaybill=CASE WHEN sids.PaybillCnt>0 THEN 'Y'
 								ELSE 'N' END
+			,InOut= CASE WHEN (eth.ValidFrom<=@FromDate OR eth.ValidFrom<=DATEADD(MONTH, 1, @FromDate)) AND eth.ValidTo>=@ToDate THEN ''
+						 WHEN eth.ValidFrom>@FromDate AND eth.ValidTo>=@ToDate THEN 'TransferIn'
+						 WHEN eth.ValidFrom<=@FromDate AND eth.ValidTo<=@ToDate THEN 'TransferOut'
+						 WHEN eth.ValidFrom>@FromDate AND eth.ValidTo<@ToDate THEN 'TransferInOut'
+						 ELSE '' END
 	FROM dbo.EmployeeDetails_v0 empv
 		INNER JOIN #SevaarthIds sids  ON empv.Sevaarth_Id=sids.Sevaarth_Id
+		LEFT JOIN [dbo].TDS_t_EmpTransfer_History eth ON empv.Sevaarth_Id=eth.Sevaarth_Id and eth.CurDDO_Code=@DDOCode
 	WHERE empv.DDO_Code=CASE WHEN sids.Sevaarth_Id IS NULL THEN @DDOCode 
 							ELSE empv.DDO_Code 
 						END
+	AND  ((eth.ValidFrom<=@FromDate  and eth.ValidTo>@FromDate)	OR  (eth.ValidFrom>@FromDate AND eth.ValidTo>eth.ValidFrom) OR (ValidFrom Is Null OR ValidTo Is Null))
+	AND empv.IsManual<>'Y'
 
 UNION
 
@@ -128,9 +139,10 @@ UNION
 			,empv.Account_No
 			,empv.GPF_DCPS_AccountNo
 			,empv.BankStatus
-			,Transferred=CASE WHEN empv.DDO_Code!=@DDOCode THEN 'Y'
-								ELSE 'N' END
+			,Transferred=CASE WHEN empv.DDO_Code!=@DDOCode THEN 'Transferred'
+								ELSE '' END
 			,IsPaybill='N'
+			,''
 	FROM dbo.EmployeeDetails_v1 empv		
 	WHERE empv.DDO_Code=@DDOCode AND empv.IsManual='Y' --and empv.Status='Y'
 

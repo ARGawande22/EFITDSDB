@@ -1,4 +1,6 @@
-﻿
+﻿Use TDSLive;
+GO
+
 Create   Procedure [dbo].[TDS_sp_GetYearlyChartHeaders]
 	@Regards Nvarchar(20)=null
 
@@ -24,6 +26,11 @@ BEGIN
 			ych.Regards,
 			ych.Header_Name,
 			ych.Display_Name,
+			ych.Width,
+			ych.Alignment,
+			ych.Frozen,
+			ych.IsBold,
+			ych.IsItalic,
 			ych.IsYearlyHeader,
 			ych.[Status]
 		FROM [dbo].[TDS_t_YearlyChart_Headers] ych with(nolock)

@@ -102,11 +102,14 @@ BEGIN
 			IF(@@FETCH_STATUS<>-2)
 			BEGIN
 				--[1]. Checking  voucher Exist or Not
-				SET @Voucher_Id=(SELECT Voucher_Id FROM [dbo].[TDS_t_Voucher_Details] WHERE DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate
+				SET @Voucher_Id=(SELECT TOP 1 Voucher_Id FROM [dbo].[TDS_t_Voucher_Details] WHERE DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate
 												and (Voucher_Amount=@VoucherAmount OR IsLPC='Y') and [Quarter]=@Quarter and SourceId in(1,2) and ([Status]='Y' OR [Status]='N'))
 
-				SET @SourceId=(SELECT SourceId FROM [dbo].[TDS_t_Voucher_Details] WHERE DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate
-												and (Voucher_Amount=@VoucherAmount OR IsLPC='Y') and [Quarter]=@Quarter and SourceId in(1,2) and ([Status]='Y' OR [Status]='N'))
+				--SET @SourceId=(SELECT SourceId FROM [dbo].[TDS_t_Voucher_Details] WHERE DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate
+				--								and (Voucher_Amount=@VoucherAmount OR IsLPC='Y') and [Quarter]=@Quarter and SourceId in(1,2) and ([Status]='Y' OR [Status]='N'))
+				
+				SET @SourceId=(SELECT SourceId FROM [dbo].[TDS_t_Voucher_Details] WHERE Voucher_Id=@Voucher_Id AND DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate)
+				
 				IF(@Voucher_Id>0)
 				BEGIN
 				UPDATE [dbo].[TDS_t_Voucher_Details] SET Form_Type=CASE WHEN @SourceId=1 THEN Form_Type ELSE @Form_Type END,

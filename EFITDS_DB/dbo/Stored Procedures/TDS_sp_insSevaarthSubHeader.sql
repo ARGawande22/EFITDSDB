@@ -2,6 +2,7 @@
 Create   Procedure [dbo].[TDS_sp_insSevaarthSubHeader]
 	@HeaderId INT
 	,@Headername NVARCHAR(255)
+	,@UserId INT
 	,@DetailId INT  OUTPUT
 --***********************************************************
 --***
@@ -17,20 +18,28 @@ BEGIN
 
 	DECLARE @ErrMsg		NVARCHAR(255),			
 			@rc			SMALLINT,
-		    @Did INT
+		    @Did INT,
+			@Date DATETIME
 
 	--[1]. Check the Is sevaarth Sub head is present or not 
 	SELECT @Did=Details_Id FROM [dbo].[TDS_t_HeadersDetails] Where DetailHeader_Name=@Headername
 
-	--[2]. Insert New Sevaarth Sub Head
+	--[2]. Set Current Date
+	SET @Date=GETDATE();
+
+	--[3]. Insert New Sevaarth Sub Head
 	IF @Did=0 OR @Did Is NULL
 	BEGIN
 		INSERT INTO [dbo].[TDS_t_HeadersDetails](
 					Header_Id,
 					DetailHeader_Name,
+					InsertedBy,
+					InsertedDate,
 					[Status])
 			Values(	@HeaderId,
 					@Headername,
+					@UserId,
+					@Date,
 					'Y')
 
 		IF(@@ERROR <> 0 OR @@IDENTITY=0)

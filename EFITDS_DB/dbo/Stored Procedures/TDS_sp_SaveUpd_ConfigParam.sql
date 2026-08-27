@@ -1,7 +1,7 @@
 ﻿Use TDSLive
 GO
 
-Create   Procedure [dbo].[TDS_sp_SaveUpd_ConfigParam]
+CREATE   Procedure [dbo].[TDS_sp_SaveUpd_ConfigParam]
 	@Config_Id			INT,
 	@KeyName		VARCHAR(50),
 	@KeyValue		VARCHAR(max),
@@ -58,7 +58,8 @@ BEGIN
 	ELSE
 	BEGIN
 		UPDATE [dbo].[TDS_t_ConfigurationParameter]
-		SET [Value]=@KeyValue,
+		SET --[KeyName]=CASE WHEN @KeyName=[KeyName] THEN [KeyName] ELSE @KeyName END,
+			[Value]=@KeyValue,
 			[Encript]=@Encript,
 			[Status]=@Status
 		WHERE Config_Id=@Config_Id

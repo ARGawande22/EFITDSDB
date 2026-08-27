@@ -91,7 +91,8 @@ BEGIN
 			@SubForm_Type			NVARCHAR(MAX),
 			@VoucherNo				Int,
 			@VoucherDate			Datetime,
-			@VoucherAmount			Decimal 
+			@VoucherAmount			Decimal,
+			@VCnt					Int
 
 	DECLARE K CURSOR LOCAL READ_ONLY FOR
 	SELECT [Quarter],Form_Type,SubForm_Type,Vourcher_Date,Voucher_No,Voucher_Amount FROM #KoshDetails 
@@ -101,10 +102,22 @@ BEGIN
 		BEGIN
 			IF(@@FETCH_STATUS<>-2)
 			BEGIN
-				--[1]. Checking  voucher Exist or Not
-				SET @Voucher_Id=(SELECT TOP 1 Voucher_Id FROM [dbo].[TDS_t_Voucher_Details] WHERE DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate
+				--[1] Check if Multipal voucher present for Same VoucherDate, VoucherNo & VoucherAmount
+				SET @VCnt=(SELECT Count(Voucher_Id) FROM [dbo].[TDS_t_Voucher_Details] WHERE DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate
 												and (Voucher_Amount=@VoucherAmount OR IsLPC='Y') and [Quarter]=@Quarter and SourceId in(1,2) and ([Status]='Y' OR [Status]='N'))
 
+				--[2]. Checking  voucher Exist or Not
+				IF @VCnt>1
+				BEGIN
+					SET @Voucher_Id=(SELECT TOP 1 Voucher_Id FROM [dbo].[TDS_t_Voucher_Details] WHERE DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate
+												and (Voucher_Amount=@VoucherAmount OR IsLPC='Y') and [Quarter]=@Quarter and SourceId in(1,2) and ([Status]='Y' OR [Status]='N'
+												OR IsKoshwahini='N'))
+				END
+				ELSE
+				BEGIN
+					SET @Voucher_Id=(SELECT TOP 1 Voucher_Id FROM [dbo].[TDS_t_Voucher_Details] WHERE DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate
+												and (Voucher_Amount=@VoucherAmount OR IsLPC='Y') and [Quarter]=@Quarter and SourceId in(1,2) and ([Status]='Y' OR [Status]='N'))
+				END
 				--SET @SourceId=(SELECT SourceId FROM [dbo].[TDS_t_Voucher_Details] WHERE DDO_Code=@DDOCode and Voucher_No=@VoucherNo and Vourcher_Date=@VoucherDate
 				--								and (Voucher_Amount=@VoucherAmount OR IsLPC='Y') and [Quarter]=@Quarter and SourceId in(1,2) and ([Status]='Y' OR [Status]='N'))
 				

@@ -8,6 +8,7 @@
     [Bill_Year]      NVARCHAR (10)  NULL,
     [PayBill_Type]   NVARCHAR (255) NULL,
     [Form_Type]      NVARCHAR (3)   NULL,
+    [SubForm_Type]   NVARCHAR(max)  NULL,
     [Vourcher_Date]  DATE           NULL,
     [Voucher_No]     INT            NULL,
     [Voucher_Amount] DECIMAL (18)   NULL,
@@ -16,11 +17,17 @@
     [IsOltas]        NVARCHAR (1)   NULL,
     [IsLPC]          NVARCHAR (1)   NULL,
     [SourceId]       INT            NULL,
+    [IsNewSevaarth]  INT            NULL,
     [InsertedOn]     DATE           NULL,
     [InsertedBy]     INT            NULL,
     [UpdatedOn]      DATE           NULL,
     [updatedBy]      INT            NULL,
     [Status]         NVARCHAR (1)   NULL,
-    CONSTRAINT [PK_Voucher_Details] PRIMARY KEY CLUSTERED ([Voucher_Id] ASC)
-);
+    CONSTRAINT [PK_Voucher_Details] PRIMARY KEY CLUSTERED (
+	[Voucher_Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
 
+ALTER TABLE [dbo].[TDS_t_Voucher_Details] ADD  CONSTRAINT [DF_TDS_t_Voucher_Details_IsNewSevaarth]  DEFAULT ((0)) FOR [IsNewSevaarth]
+GO

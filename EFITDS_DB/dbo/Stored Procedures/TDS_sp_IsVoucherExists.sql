@@ -4,6 +4,7 @@ Create   Procedure [dbo].[TDS_sp_IsVoucherExists]
 	@BillHead NVARCHAR(50)=NULL,
 	@VoucherNo Int=-1,
 	@VoucherDate Datetime=NULL,
+	@IsNewSevaarth Int=0,
 	@VoucherId INT OUTPUT
 
 --***********************************************************
@@ -26,6 +27,7 @@ BEGIN
 	  AND ((@BillHead IS NULL) OR (BillHead=@BillHead))
 	  AND ((@VoucherNo =-1) OR (Voucher_No=@VoucherNo))
 	  AND ((@VoucherDate IS NULL) OR (Vourcher_Date=CONVERT(DATE, @VoucherDate)))
+	  AND (IsNewSevaarth=@IsNewSevaarth)
 	  AND [Status]='Y'
 
 	IF(@@ERROR <> 0)

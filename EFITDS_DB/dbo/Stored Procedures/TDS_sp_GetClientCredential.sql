@@ -16,7 +16,12 @@ BEGIN
 	SET ANSI_NULLS ON
 	SET ANSI_WARNINGS ON
 
-	DECLARE @ErrMsg Nvarchar(255)
+	DECLARE @ErrMsg Nvarchar(255),
+			@RunBothSevaarth Nvarchar(1),
+			@IsNewSevaarth Nvarchar(1)
+
+	SELECT  @RunBothSevaarth= [Value] FROM [dbo].[TDS_t_ConfigurationParameter] WHERE KeyName='RunBothSevaarth'
+	SELECT  @IsNewSevaarth= [Value] FROM [dbo].[TDS_t_ConfigurationParameter] WHERE KeyName='IsNewSevaarth'
 
     IF OBJECT_ID('tempdb..#SevaarthCredential') IS NOT NULL
 		DROP TABLE #SevaarthCredential
@@ -51,16 +56,34 @@ BEGIN
 							FROM dbo.TDS_t_Office_Credentials oc
 							WHERE oc.Office_Id=@OfficeId
 
-	--Get Client Credentials Information	
-	SELECT ct.Credential_Id
-		   ,ct.Credential_Type
-		   ,c.Id
-		   ,c.[User_Id]
-		   ,c.[Password]
-		   ,c.[Status]
-	FROM dbo.TDS_t_CrendetialTypes ct with(nolock)
-		LEFT JOIN #SevaarthCredential c with(nolock) ON ct.Credential_Id=c.Credential_Id
-	WHERE ct.[Status]='Y'
+	--Get Client Credentials Information
+	IF @RunBothSevaarth='Y'
+	BEGIN
+		SELECT ct.Credential_Id
+			   ,ct.Credential_Type
+			   ,c.Id
+			   ,c.[User_Id]
+			   ,c.[Password]
+			   ,c.[Status]
+		FROM dbo.TDS_t_CrendetialTypes ct with(nolock)
+			LEFT JOIN #SevaarthCredential c with(nolock) ON ct.Credential_Id=c.Credential_Id
+		WHERE ct.[Status]='Y'
+	END
+	ELSE
+	BEGIN
+		SELECT ct.Credential_Id
+			   ,ct.Credential_Type
+			   ,c.Id
+			   ,c.[User_Id]
+			   ,c.[Password]
+			   ,c.[Status]
+		FROM dbo.TDS_t_CrendetialTypes ct with(nolock)
+			LEFT JOIN #SevaarthCredential c with(nolock) ON ct.Credential_Id=c.Credential_Id
+		WHERE ct.[Status]='Y'
+			AND ((@IsNewSevaarth = 'Y' AND ct.Credential_Id NOT IN (1, 2))
+				OR
+				(@IsNewSevaarth <> 'Y' AND ct.Credential_Id NOT IN (5, 6)));
+	END
 
 	IF(@@ROWCOUNT=0)
 	BEGIN

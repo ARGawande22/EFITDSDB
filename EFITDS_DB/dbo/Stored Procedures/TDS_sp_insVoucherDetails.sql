@@ -18,6 +18,7 @@ Create   Procedure [dbo].[TDS_sp_insVoucherDetails]
 	@isOltas NVARCHAR(1),
 	@IsLPC NVARCHAR(1)='N',
 	@SourceId NVARCHAR(1),
+	@IsNewSevaarth Int = 0,
 	@Status NVARCHAR(1),
 	@UserId Int, 
 	@VoucherId INT OUTPUT
@@ -45,6 +46,7 @@ BEGIN
 	  AND ((@BillHead IS NULL) OR (BillHead=@BillHead))
 	  AND ((@VoucherNo =-1) OR (Voucher_No=@VoucherNo))
 	  AND ((@VoucherDate IS NULL) OR (Vourcher_Date=CONVERT(DATE, @VoucherDate)))	
+	  AND (IsNewSevaarth=@IsNewSevaarth)
 
 	IF(@@ERROR <> 0)
 		BEGIN
@@ -85,6 +87,7 @@ BEGIN
 						[IsOltas],
 						[IsLPC],
 						[SourceId],
+						[IsNewSevaarth],
 						[InsertedOn],
 						[InsertedBy],
 						[Status])
@@ -104,6 +107,7 @@ BEGIN
 						@isOltas,
 						@IsLPC,
 						@SourceId,
+						@IsNewSevaarth,
 						@GetDate,
 						@UserId,
 						@Status)
@@ -127,6 +131,7 @@ BEGIN
 			[IsOltas]=@isOltas,
 			[IsLPC]=@IsLPC,
 			[SourceId]=@SourceId,
+			[IsNewSevaarth]=@IsNewSevaarth,
 			[UpdatedOn]=@GetDate,
 			[updatedBy]=@UserId,
 			[Status]=@Status

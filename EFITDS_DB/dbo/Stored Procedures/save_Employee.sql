@@ -29,7 +29,7 @@ BEGIN
 
 	SET @GetDate=GETDATE();
 
-	IF OBJECT_ID('tempdb..#EmployeeDetailss') IS NOT NULL
+	IF OBJECT_ID('tempdb..#EmployeeDetails') IS NOT NULL
 		DROP TABLE #EmployeeDetails
 
 	CREATE TABLE #EmployeeDetails(

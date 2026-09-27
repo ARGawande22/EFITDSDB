@@ -1,4 +1,6 @@
-﻿
+﻿Use TDSLive
+GO
+
 Create   Procedure [dbo].[TDS_sp_IsVoucherExists]
 	@DDOCode NVARCHAR(10)=NULL,
 	@BillHead NVARCHAR(50)=NULL,
@@ -21,6 +23,7 @@ BEGIN
 
 	DECLARE @ErrMsg		NVARCHAR(255)
 
+	--[1]. Check if voucher already inserted for below Criteria	
 	SELECT @VoucherId=Voucher_Id
 	FROM [dbo].[TDS_t_Voucher_Details]
 	WHERE ((@DDOCode IS NULL) OR (DDO_Code=@DDOCode))
@@ -29,7 +32,20 @@ BEGIN
 	  AND ((@VoucherDate IS NULL) OR (Vourcher_Date=CONVERT(DATE, @VoucherDate)))
 	  AND (IsNewSevaarth=@IsNewSevaarth)
 	  AND [Status]='Y'
+	
 
+	--[2]. Check if voucher already inserted from other system(old Or new sevaarth)	
+	 IF(@VoucherId=0 OR @VoucherId Is NULL)
+	  BEGIN
+		SELECT @VoucherId=Voucher_Id
+		FROM [dbo].[TDS_t_Voucher_Details]
+		WHERE ((@DDOCode IS NULL) OR (DDO_Code=@DDOCode))
+		  AND ((@VoucherNo =-1) OR (Voucher_No=@VoucherNo))
+		  AND ((@VoucherDate IS NULL) OR (Vourcher_Date=CONVERT(DATE, @VoucherDate)))
+		  AND (IsNewSevaarth<>@IsNewSevaarth)
+		  AND [Status]='Y'
+	   END
+		  
 	IF(@@ERROR <> 0)
 		BEGIN
 			Select @ErrMsg='Error checking Voucher details'

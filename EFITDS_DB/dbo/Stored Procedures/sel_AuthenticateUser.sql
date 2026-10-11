@@ -28,8 +28,9 @@ BEGIN
 	SELECT @LoginID=login_Id
 	FROM  [dbo].[TDS_t_UserLogin] l with(nolock)
 	 JOIN [dbo].[TDS_t_Office_Details] o with(nolock) ON l.Office_Id=o.Office_Id
-	Where [User_Id]=@UserId and [Password]=@Password
-	and l.Status='Y' AND o.[Status]='Y'
+	Where [User_Id]=@UserId AND l.[User_Id] COLLATE Latin1_General_CS_AS = @UserId COLLATE Latin1_General_CS_AS  -- enforces exact case
+	AND [Password]=@Password
+	AND l.Status='Y' AND o.[Status]='Y'
 
 	IF(@@ROWCOUNT=0)
 	BEGIN

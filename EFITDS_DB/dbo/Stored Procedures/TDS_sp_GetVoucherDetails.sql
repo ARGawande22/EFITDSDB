@@ -41,6 +41,7 @@ BEGIN
 			,v.Voucher_Amount
 			,v.SourceId
 			,v.Source
+			,v.IsNewSevaarth
 			,v.Kosh
 			,v.Bin
 			,v.Oltas

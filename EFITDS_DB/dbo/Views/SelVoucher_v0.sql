@@ -33,7 +33,8 @@ AS
 		v.Voucher_No,
 		v.Voucher_Amount,
 		v.SourceId,
-		Source=	CASE WHEN v.SourceId=1 THEN 'Sevaarth'
+		Source=	CASE WHEN v.SourceId=1 AND v.IsNewSevaarth=0 THEN 'Sevaarth' 
+					 WHEN  v.SourceId=1 AND v.IsNewSevaarth=1 THEN 'NewSevaarth'
 					 WHEN v.SourceId=2 THEN 'Koshwahini'
 					 WHEN v.SourceId=3 THEN 'Olttas'
 				ELSE 'NA'
@@ -52,6 +53,7 @@ AS
 					 WHEN v.SourceId in(1,2) THEN 'NA'
 				ELSE 'UnMatched'
 				END,
+		IsNewSevaarth,
 		InsertedOn=CONVERT(DATE, v.InsertedOn,23),
 		v.InsertedBy,
 		iUserId=ul.[User_Id],

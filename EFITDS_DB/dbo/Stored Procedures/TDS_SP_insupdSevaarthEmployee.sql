@@ -212,7 +212,14 @@ BEGIN
 						PAN_Status=CASE WHEN e.PAN_Status='Y' AND e.EMP_PANNo = @EMP_PANNo THEN e.PAN_Status ELSE 'N'END,
 						UID_No=CASE WHEN @UID_No IS NOT NULL THEN @UID_No ELSE e.UID_No END,
 						EID_No=CASE WHEN @EID_No IS NOT NULL THEN @EID_No ELSE e.EID_No END,
-						Name_AsPerSevaarth=@Name_AsPerSevaarth,
+						Name_AsPerSevaarth = CASE
+                            WHEN dbo.fn_IsFullName(@Name_AsPerSevaarth) = 1
+                             AND dbo.fn_IsFullName(Name_AsPerSevaarth) = 0
+							 AND (@Name_AsPerSevaarth IS NOT NULL AND @Name_AsPerSevaarth='')
+                            THEN @Name_AsPerSevaarth
+                            ELSE Name_AsPerSevaarth
+                         END,
+						--Name_AsPerSevaarth=@Name_AsPerSevaarth,
 						DBO_AsPerSevaarth=CASE WHEN @DOB_AsPerSevaarth IS NOT NULL THEN @DOB_AsPerSevaarth ELSE e.DBO_AsPerSevaarth END,
 						Name_AsPerIT=CASE WHEN @Name_AsPerIT IS NOT NULL THEN @Name_AsPerIT ELSE e.Name_AsPerIT END,
 						DBO_AsPerIT=CASE WHEN @DOB_AsPerIT IS NOT NULL THEN @DOB_AsPerIT ELSE e.DBO_AsPerIT END,

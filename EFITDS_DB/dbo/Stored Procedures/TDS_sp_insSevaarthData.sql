@@ -1,7 +1,7 @@
 ﻿Use TDSLive
 GO
 
-Create   Procedure [dbo].[TDS_sp_insSevaarthData]
+Alter   Procedure [dbo].[TDS_sp_insSevaarthData]
 	@loginId INT
 	,@VDate	 DATETIME=Null      --Just for Managing Emp Transfer History
 	,@Sevaarthxml TEXT	
@@ -861,7 +861,13 @@ BEGIN
 						PAN_Status=CASE WHEN EMP_PANNo<>@EMP_PANNo THEN 'N' ELSE PAN_Status END,
 						UID_No=@UID_No,
 						EID_No=@EID_No,
-						Name_AsPerSevaarth=@Name_AsPerSevaarth,
+						Name_AsPerSevaarth = CASE
+                            WHEN dbo.fn_IsFullName(@Name_AsPerSevaarth) = 1
+                             AND dbo.fn_IsFullName(Name_AsPerSevaarth) = 0
+                            THEN @Name_AsPerSevaarth
+                            ELSE Name_AsPerSevaarth
+                         END,
+						--Name_AsPerSevaarth=@Name_AsPerSevaarth,
 						DBO_AsPerSevaarth=@DOB_AsPerSevaarth
 					WHERE Sevaarth_Id=@Sevaarth_Id
 				 END

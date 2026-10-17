@@ -64,6 +64,7 @@ BEGIN
 			  AND Vourcher_Date=CONVERT(DATE, @VoucherDate) 
 			  AND Form_Type=@Form_Type
 			  AND [Quarter]=@Quarter
+			  AND (SubForm_Type IS NULL OR SubForm_Type='')
 			  AND SourceId=2
 	   END
 

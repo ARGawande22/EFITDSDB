@@ -202,5 +202,7 @@
     <Build Include="dbo\Stored Procedures\TDS_SP_insupdSevaarthEmployee.sql" />
     <Build Include="dbo\Stored Procedures\TDS_sp_updVoucherFormType.sql" />
     <Build Include="dbo\Stored Procedures\TDS_sp_DelVoucher.sql" />
+    <Build Include="dbo\Functions\fn_IsFullName.sql" />
+    <Build Include="dbo\Functions\fn_IsFullNamev1.sql" />
   </ItemGroup>
 </Project>

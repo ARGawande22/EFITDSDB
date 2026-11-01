@@ -204,5 +204,7 @@
     <Build Include="dbo\Stored Procedures\TDS_sp_DelVoucher.sql" />
     <Build Include="dbo\Functions\fn_IsFullName.sql" />
     <Build Include="dbo\Functions\fn_IsFullNamev1.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetMaxUserId_v1.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_sel24QExportVouchers.sql" />
   </ItemGroup>
 </Project>

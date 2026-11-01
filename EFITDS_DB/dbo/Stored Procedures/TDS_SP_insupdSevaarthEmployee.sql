@@ -215,7 +215,7 @@ BEGIN
 						Name_AsPerSevaarth = CASE
                             WHEN dbo.fn_IsFullName(@Name_AsPerSevaarth) = 1
                              AND dbo.fn_IsFullName(Name_AsPerSevaarth) = 0
-							 AND (@Name_AsPerSevaarth IS NOT NULL AND @Name_AsPerSevaarth='')
+							 AND (@Name_AsPerSevaarth IS NOT NULL AND @Name_AsPerSevaarth<>'')
                             THEN @Name_AsPerSevaarth
                             ELSE Name_AsPerSevaarth
                          END,

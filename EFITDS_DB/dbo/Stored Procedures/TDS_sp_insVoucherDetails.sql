@@ -54,7 +54,7 @@ BEGIN
 			GOTO spError
 		END
 
-	--Check if any inserted from Kshwahini
+	--Check if any inserted from Koshwahini
 	  IF(@VoucherId=0 OR @VoucherId Is NULL)
 	  BEGIN
 	     SELECT @VoucherId=Voucher_Id

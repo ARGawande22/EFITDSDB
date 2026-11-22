@@ -206,5 +206,9 @@
     <Build Include="dbo\Functions\fn_IsFullNamev1.sql" />
     <Build Include="dbo\Stored Procedures\TDS_sp_GetMaxUserId_v1.sql" />
     <Build Include="dbo\Stored Procedures\TDS_sp_sel24QExportVouchers.sql" />
+    <Build Include="dbo\Stored Procedures\TDS_sp_GetCalculationChartHeaders.sql" />
+    <Build Include="dbo\Views\TDS_v_CalChart_Headers.sql" />
+    <Build Include="dbo\Views\TDS_v_CalChart_SubDetailsHeader_Limits.sql" />
+    <Build Include="dbo\Views\TDS_v_CalChart_SubHeader_Limits.sql" />
   </ItemGroup>
 </Project>
